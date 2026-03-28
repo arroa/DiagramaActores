@@ -566,8 +566,27 @@
       touch-action: none;
     }
 
-    /* Las rutas no deben capturar clics para que los nodos reciban el evento */
+    /* Capa activa: solo .route-hit captura clics; el resto deja pasar al lienzo/nodos. */
     #routeLayer {
+      pointer-events: auto;
+    }
+
+    #routeLayer .route,
+    #routeLayer .route-path {
+      pointer-events: none;
+    }
+
+    #routeLayer .route-hit {
+      pointer-events: stroke;
+      cursor: pointer;
+    }
+
+    #routeLayer .route-label {
+      pointer-events: none;
+    }
+
+    #routeLayer .route-pick-icon,
+    #routeLayer .route-pick-icon * {
       pointer-events: none;
     }
 
@@ -599,6 +618,16 @@
     .node.active-step .node-type {
       fill: #1e3a5f !important;
       font-weight: 700;
+    }
+
+    .node.node-port-edit-focus rect {
+      stroke: #fbbf24;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.55));
+    }
+
+    .node.node-port-edit-focus .node-label {
+      fill: #fef3c7;
     }
 
     .node-label {
@@ -920,6 +949,18 @@
       r: 7;
     }
 
+    .port-dot-candidate circle {
+      opacity: 0.5;
+    }
+
+    .port-dot-candidate:hover circle {
+      opacity: 1;
+    }
+
+    .port-dot-current circle {
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
+    }
+
     .port-label {
       font-size: 8px;
       font-family: Inter, sans-serif;
@@ -944,6 +985,55 @@
     .step-item.accordion-active {
       border-left-color: #2563eb !important;
       background: rgba(37, 99, 235, 0.1) !important;
+    }
+
+    .step-item.port-step-active {
+      border-left: 3px solid #22d3ee !important;
+      background: rgba(34, 211, 238, 0.08) !important;
+    }
+
+    .step-item.step-pickable {
+      cursor: pointer;
+    }
+
+    .step-item.step-pickable:hover {
+      border-color: rgba(251, 191, 36, 0.55);
+      background: rgba(251, 191, 36, 0.06);
+    }
+
+    .node-adjust-route-fo {
+      pointer-events: none;
+    }
+
+    .node-adjust-route-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .node-adjust-route-inner {
+      padding: 3px 10px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      border-radius: 8px;
+      border: 1px solid rgba(251, 191, 36, 0.65);
+      background: rgba(15, 23, 42, 0.88);
+      color: #fbbf24;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+      cursor: pointer;
+      pointer-events: auto;
+      white-space: nowrap;
+    }
+
+    .node-adjust-route-inner:hover {
+      color: #fde68a;
+      border-color: #facc15;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
     }
 
     .port-btns {
@@ -1265,7 +1355,7 @@
             </div>
           </div>
           <div class="step-bar-params">
-            <button id="portEditBtn" class="btn btn-flat" title="Ajustar puntos de conexión">✎ Ajustar conexiones</button>
+            <button type="button" id="portEditBtn" class="btn btn-flat" disabled title="Elige un proceso; activa el modo y usa «Ajustar ruta» en cada nodo">✎ Ajustar conexiones</button>
             <button id="gridToggleBtn" class="btn btn-flat" title="Mostrar u Ocultar Cuadrícula">⊞ Grid</button>
             <button id="loadDemoBtn" class="btn btn-flat">▶ Demo</button>
             <button id="downloadDemoBtn" class="btn btn-flat">⬇ Excel Demo</button>
@@ -1315,8 +1405,11 @@
           <li><strong>Mi Excel:</strong> Exporta el estado actual a un .xlsx: posiciones de nodos (x, y), conexiones,
             procesos y pasos con los punteros (in_port, out_port) que hayas ajustado. Si subes un Excel, mueves nodos o editas
             punteros con «Ajustar conexiones», al descargar <em>Mi Excel</em> todo queda actualizado.</li>
-          <li><strong>✎ Ajustar conexiones:</strong> Botón en la barra inferior. Activa el modo, selecciona un proceso y
-            expande un paso para elegir la conexión (puerto) a editar.</li>
+          <li><strong>✎ Ajustar conexiones:</strong> activa el modo y <em>Ajustar ruta</em> en cada nodo. Al pulsar, destacas el nodo:
+            <strong>1)</strong> elige en el panel derecho la flecha (paso) a corregir;
+            <strong>2)</strong> el punto actual de esa flecha en el nodo se resalta y el resto son candidatos;
+            <strong>3)</strong> pulsa el nuevo punto: la punta se mueve y la flecha se deselecciona (vuelve al paso 1).
+            Cian = salida, ámbar = entrada. Con una sola flecha en el nodo se salta el paso 1. Cierra con <em>Ajustar ruta</em> o <em>✎ Cerrar ajuste</em>.</li>
         </ul>
 
         <h3>Estructura del Excel</h3>
@@ -1399,8 +1492,7 @@
       pasos: [],
       selectedTxId: null,
       stepIndex: -1,
-      portConnectionIdx: -1,   // índice de la CONEXIÓN seleccionada para editar puertos (0 = flecha de paso[0]→paso[1])
-      portStepExpandedIdx: -1, // paso actualmente expandido en panel de edición de puertos
+      portConnectionIdx: -1,   // índice del paso cuya flecha se edita (puertos salida/entrada)
       runTimer: null,
       countdownTimer: null,
       countdownSecond: 0,
@@ -1458,6 +1550,23 @@
 
     // Estado del modo edición de puertos
     let portEditMode = false;
+    /** null = botón «Ajustar ruta» en todos los nodos con pasos; si es un id, solo ese nodo muestra el botón (destacado). */
+    let portEditActiveNodeId = null;
+
+    function refreshPortEditMainButtonLabel() {
+      const portEditBtn = $('#portEditBtn');
+      if (!portEditBtn) return;
+      portEditBtn.textContent = portEditMode ? '✎ Cerrar ajuste' : '✎ Ajustar conexiones';
+    }
+
+    function resetPortEditMode() {
+      portEditMode = false;
+      portEditActiveNodeId = null;
+      state.portConnectionIdx = -1;
+      const portEditBtn = $('#portEditBtn');
+      if (portEditBtn) portEditBtn.classList.remove('port-edit-active');
+      refreshPortEditMainButtonLabel();
+    }
 
     function normalize(rows, mapper) {
       if (!Array.isArray(rows)) return [];
@@ -1473,6 +1582,7 @@
     function loadWorkbook(workbook) {
       // Limpiar el estado previo completo para que los nodos no se combinen
       stopRun();
+      resetPortEditMode();
       state.actors = [];
       state.edges = [];
       state.procesos = [];
@@ -1569,6 +1679,7 @@
       renderEvents();
       clearStepsPanel();
       drawAll();
+      updatePortEditButtonState();
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
@@ -1626,10 +1737,80 @@
       return state.pasos.filter(p => p.proceso_id === pid);
     }
 
-    // Dibuja los puntos de conexión interactivos para el PASO (Secuencia) seleccionado.
-    // Cuando portConnectionIdx >= 0, muestra 2 dots:
-    //   - out_port del stepFrom (nodo emisor) (cian)
-    //   - in_port  del stepTo (nodo receptor de ese mismo paso) (ámbar)
+    function stepTouchesNode(step, nodeId) {
+      const n = normId(nodeId);
+      return normId(step.from_node) === n || normId(step.to_node) === n;
+    }
+
+    function stepIndicesForNode(nodeId, txId) {
+      const steps = getEventSteps(txId);
+      const ix = [];
+      for (let i = 0; i < steps.length; i++) {
+        if (stepTouchesNode(steps[i], nodeId)) ix.push(i);
+      }
+      return ix;
+    }
+
+    function pickPortConnectionStep(idx) {
+      if (!portEditMode || !state.selectedTxId || portEditActiveNodeId === null) return;
+      const steps = getEventSteps(state.selectedTxId);
+      if (idx < 0 || idx >= steps.length) return;
+      if (!stepTouchesNode(steps[idx], portEditActiveNodeId)) return;
+      state.portConnectionIdx = idx;
+      renderSteps(state.selectedTxId, state.stepIndex);
+      drawPortDots();
+      drawRoute();
+    }
+
+    /** Si existe una conexión estática mismo origen→destino que el paso, copia puerta_salida / puerta_destino para el modo pasivo. */
+    function syncStaticEdgeWithPaso(paso) {
+      if (!paso) return;
+      const from = normId(paso.from_node);
+      const to = normId(paso.to_node);
+      if (!from || !to) return;
+      const edge = state.edges.find(e => normId(e.from) === from && normId(e.to) === to);
+      if (!edge) return;
+      edge.out_port = paso.out_port ? normId(paso.out_port) : '';
+      edge.in_port = paso.in_port ? normId(paso.in_port) : '';
+    }
+
+    /** Al enfocar nodo: sin flecha elegida salvo que solo haya una (evita elegir en panel). */
+    function initialPortConnectionIdxForNode(nodeId, txId) {
+      const list = stepIndicesForNode(nodeId, txId);
+      if (list.length === 1) return list[0];
+      return -1;
+    }
+
+    function updatePortEditButtonState() {
+      const el = $('#portEditBtn');
+      if (!el) return;
+      const steps = state.selectedTxId ? getEventSteps(state.selectedTxId) : [];
+      el.disabled = !state.selectedTxId || steps.length === 0;
+    }
+
+    function handleNodeAdjustRouteClick(nodeId) {
+      if (!portEditMode || !state.selectedTxId) return;
+      const list = stepIndicesForNode(nodeId, state.selectedTxId);
+      if (!list.length) return;
+
+      if (portEditActiveNodeId === null) {
+        portEditActiveNodeId = nodeId;
+        state.portConnectionIdx = initialPortConnectionIdxForNode(nodeId, state.selectedTxId);
+      } else if (portEditActiveNodeId === nodeId) {
+        portEditActiveNodeId = null;
+        state.portConnectionIdx = -1;
+      } else {
+        portEditActiveNodeId = nodeId;
+        state.portConnectionIdx = initialPortConnectionIdxForNode(nodeId, state.selectedTxId);
+      }
+
+      renderSteps(state.selectedTxId, state.stepIndex);
+      drawPortDots();
+      drawRoute();
+    }
+
+    // Flujo: 1) Elegir flecha (panel) → 2) Punto actual resaltado + candidatos → 3) Clic en nuevo puerto → deselecciona flecha.
+    // Con nodo en edición: solo puertos de ese nodo (salida cian / entrada ámbar). Sin nodo: ambos extremos si hay idx.
     function drawPortDots() {
       portEditLayer.innerHTML = '';
       if (!portEditMode) return;
@@ -1641,7 +1822,7 @@
 
       const ci = state.portConnectionIdx;
 
-      // Sin conexión seleccionada: mostrar hint
+      // Sin paso elegido: mensaje según contexto
       if (ci < 0 || ci >= steps.length) {
         const hint = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         hint.setAttribute('x', 12);
@@ -1650,23 +1831,31 @@
         hint.setAttribute('font-size', '11px');
         hint.setAttribute('font-family', 'Inter, sans-serif');
         hint.setAttribute('style', 'pointer-events: none');
-        hint.textContent = '✎ Selecciona un paso de la lista para editar sus puertos';
+        hint.textContent =
+          portEditActiveNodeId !== null
+            ? '1) Clic en una flecha del diagrama o en un paso del panel  →  2) Nuevo punto en el nodo'
+            : '✎ Pulsa «Ajustar ruta» en un nodo del diagrama';
         portEditLayer.appendChild(hint);
         return;
       }
 
       const PORTS = ['UL', 'UR', 'R', 'DR', 'DL', 'L'];
       const currentStep = steps[ci]; // La secuencia seleccionada
+      const focusId = portEditActiveNodeId;
+      const showOutPorts =
+        !focusId || normId(currentStep.from_node) === normId(focusId);
+      const showInPorts =
+        !focusId || normId(currentStep.to_node) === normId(focusId);
 
       // Dibujar dots de salida (OUT) sobre el nodo origen
       const actorFrom = amap.get(currentStep.from_node);
-      if (actorFrom && actorFrom.visible) {
+      if (showOutPorts && actorFrom && actorFrom.visible) {
         PORTS.forEach(portName => {
           const pt = getConnectorPoint(actorFrom, portName);
           const isActive = currentStep.out_port === portName;
 
           const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-          g.setAttribute('class', 'port-dot');
+          g.setAttribute('class', isActive ? 'port-dot port-dot-current' : 'port-dot port-dot-candidate');
           g.dataset.role = 'out';
           g.dataset.connIdx = ci;
           g.dataset.portName = portName;
@@ -1674,10 +1863,10 @@
           const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
           circle.setAttribute('cx', pt.x);
           circle.setAttribute('cy', pt.y);
-          circle.setAttribute('r', isActive ? 8 : 5);
-          circle.setAttribute('fill', isActive ? 'rgba(34,211,238,0.9)' : 'rgba(34,211,238,0.18)');
+          circle.setAttribute('r', isActive ? 9 : 5);
+          circle.setAttribute('fill', isActive ? 'rgba(34,211,238,0.95)' : 'rgba(34,211,238,0.14)');
           circle.setAttribute('stroke', '#22d3ee');
-          circle.setAttribute('stroke-width', isActive ? '2' : '1');
+          circle.setAttribute('stroke-width', isActive ? 2.5 : 1);
 
           const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           text.setAttribute('class', 'port-label');
@@ -1693,13 +1882,13 @@
 
       // Dibujar dots de entrada (IN) sobre el nodo destino
       const actorTo = amap.get(currentStep.to_node);
-      if (actorTo && actorTo.visible) {
+      if (showInPorts && actorTo && actorTo.visible) {
         PORTS.forEach(portName => {
           const pt = getConnectorPoint(actorTo, portName);
           const isActive = currentStep.in_port === portName;
 
           const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-          g.setAttribute('class', 'port-dot');
+          g.setAttribute('class', isActive ? 'port-dot port-dot-current' : 'port-dot port-dot-candidate');
           g.dataset.role = 'in';
           g.dataset.connIdx = ci;
           g.dataset.portName = portName;
@@ -1707,10 +1896,10 @@
           const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
           circle.setAttribute('cx', pt.x);
           circle.setAttribute('cy', pt.y);
-          circle.setAttribute('r', isActive ? 8 : 5);
-          circle.setAttribute('fill', isActive ? 'rgba(251,191,36,0.9)' : 'rgba(251,191,36,0.18)');
+          circle.setAttribute('r', isActive ? 9 : 5);
+          circle.setAttribute('fill', isActive ? 'rgba(251,191,36,0.95)' : 'rgba(251,191,36,0.14)');
           circle.setAttribute('stroke', '#fbbf24');
-          circle.setAttribute('stroke-width', isActive ? '2' : '1');
+          circle.setAttribute('stroke-width', isActive ? 2.5 : 1);
 
           const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           text.setAttribute('class', 'port-label');
@@ -1757,9 +1946,15 @@
         paso[field] = portName;
       }
 
+      syncStaticEdgeWithPaso(paso);
       saveState();
-      drawRoute();
+      if (portEditActiveNodeId !== null) {
+        state.portConnectionIdx = -1;
+      }
+      renderSteps(state.selectedTxId, state.stepIndex);
       drawPortDots();
+      drawRoute();
+      drawEdges();
     }
 
     function getActiveNodeId() {
@@ -1774,8 +1969,12 @@
       nodesLayer.innerHTML = '';
       for (const actor of state.actors) {
         const isActive = actor.id === activeNodeId;
+        let nodeClass = 'node' + (actor.visible ? '' : ' hidden') + (actor.description ? ' node-has-tooltip' : '') + (isActive ? ' active-step' : '');
+        if (portEditMode && portEditActiveNodeId !== null && portEditActiveNodeId === actor.id) {
+          nodeClass += ' node-port-edit-focus';
+        }
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        g.setAttribute('class', 'node' + (actor.visible ? '' : ' hidden') + (actor.description ? ' node-has-tooltip' : '') + (isActive ? ' active-step' : ''));
+        g.setAttribute('class', nodeClass);
         if (actor.description) g.setAttribute('data-has-tooltip', '1');
         g.dataset.id = actor.id;
         g.setAttribute('transform', `translate(${actor.x},${actor.y})`);
@@ -1805,6 +2004,34 @@
         coords.textContent = `X:${Math.round(actor.x)}, Y:${Math.round(660 - (actor.y + NODE_H))}`;
 
         g.append(rect, label, type, coords);
+
+        if (portEditMode && state.selectedTxId && actor.visible) {
+          const rel = stepIndicesForNode(actor.id, state.selectedTxId);
+          const showAdjustBtn = rel.length > 0 && (portEditActiveNodeId === null || actor.id === portEditActiveNodeId);
+          if (showAdjustBtn) {
+            const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+            fo.setAttribute('class', 'node-adjust-route-fo');
+            fo.setAttribute('x', 0);
+            fo.setAttribute('y', 0);
+            fo.setAttribute('width', NODE_W);
+            fo.setAttribute('height', NODE_H);
+            fo.setAttribute('pointer-events', 'none');
+            const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+            div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+            div.className = 'node-adjust-route-wrap';
+            const b = document.createElementNS('http://www.w3.org/1999/xhtml', 'button');
+            b.setAttribute('type', 'button');
+            b.className = 'node-adjust-route-inner';
+            b.dataset.nodeId = actor.id;
+            b.title = rel.length > 1
+              ? `${rel.length} flechas: primero elige el paso en el panel, luego el punto en el nodo`
+              : 'Elige el punto en el nodo (la flecha única ya está seleccionada)';
+            b.textContent = 'Ajustar ruta';
+            div.appendChild(b);
+            fo.appendChild(div);
+            g.appendChild(fo);
+          }
+        }
 
         if (actor.description) {
           const btn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -1878,14 +2105,19 @@
       const steps = getEventSteps(state.selectedTxId);
       if (!steps.length) return;
 
-      // En reposo (sin Play ni paso activo) solo el grafo estático: evita duplicar líneas con las aristas.
+      // Incluye edición de puertos con nodo enfocado aunque aún no haya paso elegido (elegir flecha en el diagrama).
       const showRouteOverlay =
         !!state.runTimer ||
         state.stepIndex >= 0 ||
-        (portEditMode && state.portConnectionIdx >= 0);
+        (portEditMode && state.portConnectionIdx >= 0) ||
+        (portEditMode && portEditActiveNodeId !== null);
       if (!showRouteOverlay) return;
 
       const amap = actorMap();
+      const pickingArrow =
+        portEditMode &&
+        portEditActiveNodeId !== null &&
+        state.portConnectionIdx < 0;
 
       // Dibuja una flecha curvada por cada paso (origen a destino directo)
       for (let i = 0; i < steps.length; i++) {
@@ -1897,9 +2129,10 @@
 
         const p1 = getConnectorPoint(actorFrom, step.out_port);
         const p2 = getConnectorPoint(actorTo, step.in_port);
+        const d = connectorPathD(p1, p2);
 
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', connectorPathD(p1, p2));
+        path.setAttribute('d', d);
         path.setAttribute('fill', 'none');
 
         const isActiveAnim = (state.stepIndex === i);
@@ -1913,6 +2146,9 @@
           cssClass = 'route-path ida';
         } else if (i < state.stepIndex) {
           strokeColor = '#a8a29e'; // rastro gris mate pasos pasados
+        } else if (pickingArrow && stepTouchesNode(step, portEditActiveNodeId)) {
+          strokeColor = '#94a3b8';
+          cssClass = 'route';
         }
 
         path.setAttribute('stroke', strokeColor);
@@ -1920,9 +2156,47 @@
         path.setAttribute('marker-end', markerClass);
         routeLayer.appendChild(path);
 
+        if (
+          pickingArrow &&
+          stepTouchesNode(step, portEditActiveNodeId)
+        ) {
+          const mx = (p1.x + p2.x) / 2;
+          const my = (p1.y + p2.y) / 2;
+          const gPick = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          gPick.setAttribute('class', 'route-pick-icon');
+          const pickBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          pickBg.setAttribute('cx', String(mx));
+          pickBg.setAttribute('cy', String(my));
+          pickBg.setAttribute('r', '15');
+          pickBg.setAttribute('fill', 'rgba(15,23,42,0.92)');
+          pickBg.setAttribute('stroke', 'rgba(251,191,36,0.95)');
+          pickBg.setAttribute('stroke-width', '1.5');
+          const pickHand = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          pickHand.setAttribute('x', String(mx));
+          pickHand.setAttribute('y', String(my + 6));
+          pickHand.setAttribute('text-anchor', 'middle');
+          pickHand.setAttribute('font-size', '15');
+          pickHand.setAttribute('aria-hidden', 'true');
+          pickHand.textContent = '👆';
+          gPick.append(pickBg, pickHand);
+          routeLayer.appendChild(gPick);
+
+          const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          hit.setAttribute('d', d);
+          hit.setAttribute('fill', 'none');
+          hit.setAttribute('stroke', 'rgba(0,0,0,0)');
+          hit.setAttribute('stroke-width', '22');
+          hit.setAttribute('stroke-linecap', 'round');
+          hit.setAttribute('class', 'route-hit');
+          hit.dataset.stepIdx = String(i);
+          hit.setAttribute('title', `Elegir: ${step.from_node} ➔ ${step.to_node}`);
+          routeLayer.appendChild(hit);
+        }
+
         // Texto descriptivo "action" en el medio de la flecha cuando vuela
         if (isActiveAnim || (i === state.portConnectionIdx && portEditMode)) {
           const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('class', 'route-label');
           text.setAttribute('x', (p1.x + p2.x) / 2);
           text.setAttribute('y', ((p1.y + p2.y) / 2) - 8);
           text.setAttribute('fill', strokeColor);
@@ -1957,10 +2231,7 @@
         `;
         eventList.appendChild(item);
       });
-    }
-
-    function getEventSteps(eventId) {
-      return state.pasos.filter(p => p.proceso_id === eventId);
+      updatePortEditButtonState();
     }
 
     function renderSteps(txId, activeIndex = -1, opts = {}) {
@@ -1969,63 +2240,39 @@
       if (!steps.length) {
         stepsPanel.innerHTML = '<div class="muted">Sin pasos para este proceso.</div>';
         updateStepBar(null);
+        updatePortEditButtonState();
         drawNodes();
         return;
       }
       steps.forEach((s, idx) => {
         let baseClass = 'step-item';
         if (idx === activeIndex) baseClass += ' active';
-        if (portEditMode) baseClass += ' port-edit-item';
-        if (portEditMode && state.portStepExpandedIdx === idx) baseClass += ' accordion-active';
+        if (portEditMode && state.portConnectionIdx === idx) baseClass += ' port-step-active';
+
+        const canPickPortStep =
+          portEditMode &&
+          portEditActiveNodeId !== null &&
+          stepTouchesNode(s, portEditActiveNodeId);
+        if (canPickPortStep) {
+          baseClass += ' step-pickable';
+        }
 
         const div = document.createElement('div');
         div.className = baseClass;
-
-        // En modo Puertos ON: el botón Editar Línea se muestra para el paso completo (Acordeón)
-        let portBtns = '';
-        if (portEditMode && state.portStepExpandedIdx === idx) {
-          const ciFrom = state.portConnectionIdx;
-          const isSel = ciFrom === idx ? ' port-btn-active-out' : '';
-          portBtns = `<div class="port-btns-expanded" style="margin-top: 8px; display: flex; gap: 8px;">
-               <button class="port-btn out-btn${isSel}" data-conn="${idx}" title="Editar vector entre ${s.from_node} y ${s.to_node}">Editar Ruta</button>
-              </div>`;
+        div.dataset.stepIdx = String(idx);
+        div.innerHTML = `<div><strong>#${s.seq}</strong> ${s.from_node} ➔ ${s.to_node}</div><div class="muted">${s.action}</div>`;
+        if (canPickPortStep) {
+          div.title = 'Elegir esta flecha; luego pulsa el nuevo punto en el nodo (el actual va resaltado)';
         }
-
-        div.innerHTML = `<div><strong>#${s.seq}</strong> ${s.from_node} ➔ ${s.to_node}</div><div class="muted">${s.action}</div>${portBtns}`;
-
-        if (portEditMode) {
-          div.addEventListener('click', ev => {
-            const btn = ev.target.closest('.port-btn');
-            if (btn) {
-              ev.stopPropagation();
-              const ci = Number(btn.dataset.conn);
-              state.portConnectionIdx = (state.portConnectionIdx === ci) ? -1 : ci; // toggle
-              renderSteps(txId, activeIndex);
-              drawPortDots();
-              if (state.portConnectionIdx >= 0) {
-                updateStepBar(steps[state.portConnectionIdx]);
-              }
-              return;
-            }
-
-            // Clicked the step row body (accordion toggle)
-            if (state.portStepExpandedIdx === idx) {
-              state.portStepExpandedIdx = -1;
-              state.portConnectionIdx = -1; // Desmarcar puntos al colapsar
-            } else {
-              state.portStepExpandedIdx = idx;
-              state.portConnectionIdx = -1; // Limpiar selección anterior
-            }
-            renderSteps(txId, activeIndex);
-            drawPortDots();
-          });
-        }
-
         stepsPanel.appendChild(div);
       });
 
-      if (activeIndex >= 0 && activeIndex < steps.length) {
-        updateStepBar(steps[activeIndex]);
+      const barIdx =
+        portEditMode && portEditActiveNodeId !== null && state.portConnectionIdx >= 0
+          ? state.portConnectionIdx
+          : activeIndex;
+      if (barIdx >= 0 && barIdx < steps.length) {
+        updateStepBar(steps[barIdx]);
       } else {
         updateStepBar(null, { immediate: !!opts.clearDescImmediate });
       }
@@ -2087,6 +2334,8 @@
       const isPaused = hasSteps && state.stepIndex >= 0 && !isRunning;
       const pauseToast = $('#stepPauseToast');
       if (pauseToast) pauseToast.hidden = !isPaused;
+      updatePortEditButtonState();
+
       if (btnPlay) {
         btnPlay.classList.remove('step-bar-play--running', 'step-bar-play--resume');
         if (isRunning) {
@@ -2113,10 +2362,11 @@
       state.selectedTxId = txId;
       state.stepIndex = -1;
       state.portConnectionIdx = -1;
-      state.portStepExpandedIdx = -1;
+      portEditActiveNodeId = null;
       stopRun();
       renderEvents();
       renderSteps(txId, -1);
+      refreshPortEditMainButtonLabel();
       drawRoute();
       drawPortDots();
       drawNodes();
@@ -2252,14 +2502,17 @@
       stopRun();
       state.selectedTxId = null;
       state.stepIndex = -1;
+      resetPortEditMode();
       renderEvents();
       clearStepsPanel();
+      updatePortEditButtonState();
       drawRoute();
       drawNodes();
       drawEdges();
     }
 
     function applyDemo() {
+      resetPortEditMode();
       state.actors = DEMO.actors.map(a => ({ ...a, visible: a.visible !== 0 }));
       state.edges = DEMO.edges.map(e => ({ ...e }));
 
@@ -2279,6 +2532,7 @@
       renderEvents();
       clearStepsPanel();
       drawAll();
+      updatePortEditButtonState();
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = 'Demo Activo'; loadDemoEl.classList.add('port-edit-active'); }
@@ -2292,10 +2546,12 @@
       state.selectedTxId = null;
       state.stepIndex = -1;
       stopRun();
+      resetPortEditMode();
       renderActors();
       renderEvents();
       clearStepsPanel();
       drawAll();
+      updatePortEditButtonState();
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
@@ -2504,15 +2760,22 @@
       // Botón de modo edición de puertos
       const portEditBtn = $('#portEditBtn');
       portEditBtn.addEventListener('click', () => {
-        portEditMode = !portEditMode;
-        portEditBtn.classList.toggle('port-edit-active', portEditMode);
-        portEditBtn.textContent = portEditMode ? 'Editor Conexiones ON' : '✎ Ajustar conexiones';
-        // Reset properties
-        state.portStepExpandedIdx = -1;
+        if (portEditBtn.disabled) return;
+        if (!portEditMode) {
+          portEditMode = true;
+          portEditActiveNodeId = null;
+          portEditBtn.classList.add('port-edit-active');
+        } else {
+          portEditMode = false;
+          portEditActiveNodeId = null;
+          portEditBtn.classList.remove('port-edit-active');
+        }
         state.portConnectionIdx = -1;
+        refreshPortEditMainButtonLabel();
 
         renderSteps(state.selectedTxId, state.stepIndex);
         drawPortDots();
+        drawRoute();
       });
 
       // Botón Grid ON/OFF
@@ -2531,11 +2794,36 @@
       // Botón de exportar estado actual
       $('#exportBtn').addEventListener('click', exportCurrentState);
 
+      stepsPanel.addEventListener('click', ev => {
+        const row = ev.target.closest('.step-item.step-pickable');
+        if (!row) return;
+        const idx = Number(row.dataset.stepIdx);
+        if (!Number.isFinite(idx)) return;
+        ev.preventDefault();
+        pickPortConnectionStep(idx);
+      });
+
+      svg.addEventListener('click', ev => {
+        const hit = ev.target.closest('.route-hit');
+        if (!hit) return;
+        const idx = Number(hit.dataset.stepIdx);
+        if (!Number.isFinite(idx)) return;
+        ev.stopPropagation();
+        pickPortConnectionStep(idx);
+      });
+
       // Clics en los dots de edición de puertos
       portEditLayer.addEventListener('click', handlePortDotClick);
 
       const nodeGlobo = $('#nodeGlobo');
       nodesLayer.addEventListener('click', ev => {
+        const adj = ev.target.closest('.node-adjust-route-inner');
+        if (adj) {
+          ev.stopPropagation();
+          ev.preventDefault();
+          handleNodeAdjustRouteClick(adj.dataset.nodeId);
+          return;
+        }
         const btn = ev.target.closest('.node-info-btn');
         if (!btn) return;
         ev.stopPropagation();
@@ -2579,6 +2867,7 @@
 
       svg.addEventListener('pointerdown', ev => {
         if (ev.target.closest('.node-info-btn')) return;
+        if (ev.target.closest('.node-adjust-route-inner')) return;
         const nodeEl = ev.target.closest('.node');
         if (!nodeEl) return;
         const id = nodeEl.dataset.id;
@@ -2648,6 +2937,7 @@
           renderEvents();
           clearStepsPanel();
           drawAll();
+          updatePortEditButtonState();
           hideLanding();
         }
       } catch (err) {
@@ -2666,6 +2956,8 @@
         }
       }, 600);
     }
+
+    updatePortEditButtonState();
   </script>
 </body>
 
