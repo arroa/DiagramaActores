@@ -1,0 +1,2393 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagrama de Actores 2.0 — Simulador de Eventos</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --btn: #0ea5e9;
+      --btn-hover: #0284c7;
+      --shadow: 0 8px 24px rgba(0, 0, 0, .3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 35% -10%, #1e293b 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(17, 24, 39, .95);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 12px;
+      flex-shrink: 0;
+    }
+
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      transition: background .2s;
+    }
+
+    .hamburger-btn:hover {
+      background: #334155;
+    }
+
+    .top-bar .title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #dbeafe;
+    }
+
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 300px;
+      max-width: 90vw;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      z-index: 501;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 8px 0 24px rgba(0, 0, 0, .3);
+      transform: translateX(-100%);
+      transition: transform .25s ease;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+      color: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .drawer-close:hover {
+      color: var(--text);
+    }
+
+    .drawer-body {
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .accordion-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #dbeafe;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      margin-bottom: 6px;
+    }
+
+    .accordion-head:hover {
+      background: #374151;
+    }
+
+    .accordion-head .arrow {
+      transition: transform .2s;
+    }
+
+    .accordion-head.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .accordion-body {
+      display: none;
+      padding: 8px 0 12px 0;
+    }
+
+    .accordion-body.open {
+      display: block;
+    }
+
+    .util-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .util-list .btn,
+    .util-list .file-label {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .util-list label.file-label {
+      display: flex;
+    }
+
+    .btn {
+      border: 1px solid #0c4a6e;
+      background: linear-gradient(180deg, var(--btn), #0369a1);
+      color: #ecfeff;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .btn:hover {
+      background: linear-gradient(180deg, #38bdf8, var(--btn-hover));
+    }
+
+    .btn.ghost {
+      background: #0b1220;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+
+    .btn.ghost:hover {
+      background: #111827;
+    }
+
+    .btn-flat {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      justify-content: flex-start;
+      padding-left: 14px;
+    }
+
+    .btn-flat:hover {
+      background: rgba(56, 189, 248, 0.08);
+      /* Hover celeste casi invisible */
+      border-color: rgba(56, 189, 248, 0.2);
+      color: #e0f2fe;
+    }
+
+    .file-label {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .file-label input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .warning {
+      margin-left: auto;
+      color: #fbbf24;
+      font-size: .85rem;
+      max-width: 48%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 10px;
+      min-height: 0;
+      flex: 1;
+      padding: 10px;
+    }
+
+    .center-wrap {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+      gap: 0;
+    }
+
+    .center-wrap .panel.svg-wrap {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+
+    .center-toolbar {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .center-toolbar .warning {
+      max-width: 200px;
+      margin-right: 0;
+    }
+
+    .step-desc-top {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 48px;
+      z-index: 8;
+      padding: 12px 20px;
+      text-align: center;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 70%, transparent 100%);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .step-desc-text {
+      opacity: 0;
+      transform: translateY(-16px);
+      transition: none;
+    }
+
+    .step-desc-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+
+    .step-desc-text.exit {
+      opacity: 0;
+      transform: translateY(-12px);
+      transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+    }
+
+    .step-desc-text p {
+      margin: 0;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .step-desc-countdown {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .step-desc-countdown .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: #475569;
+      transition: background 0.25s ease;
+    }
+
+    .step-desc-countdown .dot.filled {
+      background: #fff;
+    }
+
+    .step-bar {
+      flex: 0 0 auto;
+      min-height: 52px;
+      background: #fff;
+      border: 1px solid #94a3b8;
+      border-radius: 12px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .step-bar-params {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .step-bar-params .btn {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      background: #059669;
+      border: 1px solid #047857;
+      color: #fff;
+      border-radius: 8px;
+    }
+
+    .step-bar-params .btn:hover {
+      background: #047857;
+      border-color: #065f46;
+      color: #fff;
+    }
+
+    .step-bar-params .btn.port-edit-active {
+      background: #2563eb;
+      border-color: #1d4ed8;
+      color: #fff;
+    }
+
+    .step-bar-params .btn.port-edit-active:hover {
+      background: #1d4ed8;
+      border-color: #1e40af;
+      color: #fff;
+    }
+
+    .step-bar-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .step-bar-controls .btn {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+    }
+
+    .step-bar-delay {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #475569;
+      font-size: 0.8rem;
+    }
+
+    .step-bar-delay span {
+      min-width: 2.2em;
+      text-align: center;
+      color: #1e3a5f;
+      font-weight: 700;
+    }
+
+    .step-bar-delay .delay-btn {
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border-radius: 6px;
+      font-size: 1rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e2e8f0;
+      border: 1px solid #94a3b8;
+      color: #1e3a5f;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .step-bar-delay .delay-btn:hover:not(:disabled) {
+      background: #cbd5e1;
+      color: #1e40af;
+    }
+
+    .step-bar-delay .delay-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .panel {
+      background: rgba(17, 24, 39, .95);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel h3 {
+      margin: 0;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: .95rem;
+      color: #dbeafe;
+    }
+
+    .panel-body {
+      padding: 10px;
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .actor-item,
+    .event-item,
+    .step-item {
+      background: #0b1220;
+      border: 1px solid #273449;
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+
+    .actor-item label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .svg-wrap {
+      padding: 8px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #0b1220, #0a101e);
+      border: 1px solid #233046;
+      border-radius: 10px;
+      touch-action: none;
+    }
+
+    /* Las rutas no deben capturar clics para que los nodos reciban el evento */
+    #routeLayer {
+      pointer-events: none;
+    }
+
+    .node rect {
+      fill: #172033;
+      stroke: #3b82f6;
+      stroke-width: 1.4;
+      rx: 10;
+      cursor: grab;
+      pointer-events: auto;
+    }
+
+    .node:active rect {
+      cursor: grabbing;
+    }
+
+    .node.hidden rect {
+      opacity: .2;
+    }
+
+    .node.active-step rect {
+      fill: #fff;
+      stroke: #1e40af;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 10px rgba(30, 64, 175, 0.4));
+    }
+
+    .node.active-step .node-label,
+    .node.active-step .node-type {
+      fill: #1e3a5f !important;
+      font-weight: 700;
+    }
+
+    .node-label {
+      fill: #e2e8f0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .node-type {
+      fill: #93c5fd;
+      font-size: 11px;
+    }
+
+    .node-coords {
+      fill: #64748b;
+      font-size: 10px;
+      font-family: monospace;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .node[data-has-tooltip] {
+      cursor: help;
+    }
+
+    /* Botón ⓘ para abrir descripción del nodo */
+    .node-info-btn {
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .node-info-btn circle {
+      fill: rgba(59, 130, 246, 0.25);
+      stroke: #93c5fd;
+      stroke-width: 1.2;
+      transition: fill 0.15s, stroke 0.15s;
+    }
+
+    .node-info-btn:hover circle {
+      fill: rgba(59, 130, 246, 0.5);
+      stroke: #60a5fa;
+    }
+
+    .node-info-btn text {
+      fill: #3b82f6;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: Inter, sans-serif;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    /* Globo de descripción del nodo (clic en ⓘ) */
+    #nodeGlobo {
+      display: none;
+      position: fixed;
+      z-index: 900;
+      max-width: 320px;
+      padding: 12px 16px;
+      background: #fff;
+      border: 2px solid #d4af37;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(212, 175, 55, 0.2);
+      color: #1e3a5f;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+      pointer-events: auto;
+    }
+
+    #nodeGlobo.visible {
+      display: block;
+    }
+
+    .edge,
+    .route {
+      stroke: #475569;
+      stroke-width: 2;
+    }
+
+    .route-path {
+      fill: none;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 12 8;
+      animation: dashMove 1s linear infinite;
+    }
+
+    .route-path.ida {
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 6px rgba(34, 211, 238, .45));
+    }
+
+    .route-path.vuelta {
+      stroke: #fbbf24;
+      filter: drop-shadow(0 0 6px rgba(251, 191, 36, .45));
+    }
+
+    @keyframes dashMove {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+
+    .event-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tx-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .small-btn {
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #cbd5e1;
+      border-radius: 7px;
+      font-size: .8rem;
+      padding: 5px 8px;
+      cursor: pointer;
+    }
+
+    .small-btn:hover {
+      background: #111827;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: #7dd3fc;
+      font-size: 1.4rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.8rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+    }
+
+    .modal-body h3 {
+      color: #38bdf8;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-body p,
+    .modal-body li {
+      color: #cbd5e1;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .modal-body code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: #bef264;
+    }
+
+    .modal-body ul {
+      padding-left: 20px;
+    }
+
+    .small-btn.active {
+      border-color: #22d3ee;
+      color: #67e8f9;
+    }
+
+    /* SVG Tooltip */
+    .tooltip-group {
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.2s;
+    }
+
+    .tooltip-group.hidden {
+      opacity: 0;
+      transform: scale(0.8) translateY(10px);
+    }
+
+    .tooltip-bg {
+      fill: rgba(15, 23, 42, 0.95);
+      stroke: #38bdf8;
+      stroke-width: 1.5;
+      rx: 8;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    }
+
+    .tooltip-bg.warn {
+      stroke: #f59e0b;
+    }
+
+    .tooltip-bg.bad {
+      stroke: #ef4444;
+    }
+
+    .tooltip-text {
+      fill: #e2e8f0;
+      font-size: 12.5px;
+      font-family: Inter, sans-serif;
+    }
+
+    .tooltip-tag {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .tooltip-tag.ok {
+      fill: #34d399;
+    }
+
+    .tooltip-tag.warn {
+      fill: #fbbf24;
+    }
+
+    .tooltip-tag.bad {
+      fill: #f87171;
+    }
+
+    .tooltip-pointer {
+      fill: rgba(15, 23, 42, 0.95);
+      stroke: #38bdf8;
+      stroke-width: 1.5;
+    }
+
+    /* ===== PORT EDITOR ===== */
+    .port-dot {
+      cursor: pointer;
+      transition: r 0.15s ease, opacity 0.15s ease;
+    }
+
+    .port-dot:hover circle {
+      r: 7;
+    }
+
+    .port-label {
+      font-size: 8px;
+      font-family: Inter, sans-serif;
+      fill: #e2e8f0;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+      user-select: none;
+    }
+
+
+    .port-edit-item {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .port-edit-item:hover {
+      border-left-color: rgba(37, 99, 235, 0.5);
+      background: rgba(37, 99, 235, 0.05);
+    }
+
+    .step-item.accordion-active {
+      border-left-color: #2563eb !important;
+      background: rgba(37, 99, 235, 0.1) !important;
+    }
+
+    .port-btns {
+      display: inline-flex;
+      gap: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .port-btn {
+      font-size: .68rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(30, 41, 59, 0.7);
+      color: #94a3b8;
+      cursor: pointer;
+      font-family: Inter, sans-serif;
+      line-height: 1.6;
+      transition: all .15s;
+    }
+
+    .port-btn:hover {
+      border-color: #64748b;
+      color: #e2e8f0;
+    }
+
+    .port-btn.out-btn {
+      color: #22d3ee;
+      border-color: rgba(34, 211, 238, 0.3);
+    }
+
+    .port-btn.out-btn:hover {
+      background: rgba(34, 211, 238, 0.15);
+    }
+
+    .port-btn.out-btn.port-btn-active-out {
+      background: rgba(34, 211, 238, 0.25);
+      border-color: #22d3ee;
+      color: #fff;
+      box-shadow: 0 0 6px rgba(34, 211, 238, 0.4);
+    }
+
+    .port-btn.in-btn {
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .port-btn.in-btn:hover {
+      background: rgba(251, 191, 36, 0.15);
+    }
+
+    .port-btn.in-btn.port-btn-active-in {
+      background: rgba(251, 191, 36, 0.25);
+      border-color: #fbbf24;
+      color: #fff;
+      box-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn.export-btn {
+      background: linear-gradient(180deg, #059669, #047857);
+      border-color: #065f46;
+      color: #d1fae5;
+    }
+
+    .btn.export-btn:hover {
+      background: linear-gradient(180deg, #10b981, #059669);
+    }
+
+    .steps-title {
+      padding: 8px 10px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      color: #dbeafe;
+      font-size: .9rem;
+      background: #0b1220;
+    }
+
+    .step-item.active {
+      background: #fff;
+      border-color: #1e40af;
+      border-width: 2px;
+      box-shadow: 0 0 0 1px rgba(30, 64, 175, 0.4);
+      color: #1e3a5f;
+    }
+
+    .step-item.active .muted,
+    .step-item.active div {
+      color: #1e3a5f !important;
+      font-weight: 700;
+    }
+
+    .badge {
+      display: inline-block;
+      min-width: 38px;
+      text-align: center;
+      font-size: .72rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      margin-right: 6px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .badge.ok {
+      color: #d1fae5;
+      background: rgba(16, 185, 129, .18);
+      border-color: rgba(16, 185, 129, .45);
+    }
+
+    .badge.warn {
+      color: #fef3c7;
+      background: rgba(245, 158, 11, .18);
+      border-color: rgba(245, 158, 11, .45);
+    }
+
+    .badge.bad {
+      color: #fee2e2;
+      background: rgba(239, 68, 68, .18);
+      border-color: rgba(239, 68, 68, .45);
+    }
+
+    @media (max-width: 1200px) {
+      .layout {
+        grid-template-columns: 1fr 280px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="top-bar">
+      <span class="title">Diagrama de Actores 2.0 — Simulador de Eventos</span>
+    </div>
+
+    <div class="layout">
+      <div class="center-wrap">
+        <section class="panel svg-wrap">
+          <div class="center-toolbar">
+            <span id="warningBox" class="warning"></span>
+            <label class="btn file-label">📤 Subir Excel
+              <input id="fileInput" type="file" accept=".xlsx,.xls" />
+            </label>
+            <button id="exportBtn" class="btn export-btn">⬇ Mi Excel</button>
+            <button id="helpBtn" class="btn ghost" title="Ayuda / Modelo de Datos">❓ Ayuda</button>
+            <button id="clearBtn" class="btn ghost">Limpiar</button>
+          </div>
+          <div id="stepDescTop" class="step-desc-top" aria-live="polite">
+            <div id="stepDescTopTextWrap" class="step-desc-text">
+              <p id="stepDescTopText"></p>
+            </div>
+            <div id="stepDescCountdown" class="step-desc-countdown"></div>
+          </div>
+          <svg id="diagram" viewBox="0 0 1100 620" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <!-- Cuadrícula Principal Inteligente (50x50) -->
+              <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(148, 163, 184, 0.15)" stroke-width="0.5" />
+              </pattern>
+              <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"
+                patternTransform="translate(0, 10)"> <!-- offset sutil para alinear al 110 -->
+                <rect width="50" height="50" fill="url(#smallGrid)" />
+                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(148, 163, 184, 0.3)" stroke-width="1" />
+              </pattern>
+
+              <marker id="arrow" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+                <path d="M0,0 L6,2.5 L0,5 z" fill="#64748b"></path>
+              </marker>
+              <marker id="arrow-route-ida" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+                <path d="M0,0 L10,4 L0,8 z" fill="#22d3ee"></path>
+              </marker>
+              <marker id="arrow-route-vuelta" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+                <path d="M0,0 L10,4 L0,8 z" fill="#fbbf24"></path>
+              </marker>
+            </defs>
+
+            <!-- Grid visual (solo empieza debajo del header en Y=110) -->
+            <rect id="gridRect" x="0" y="110" width="100%" height="510" fill="url(#grid)" style="display: none;" />
+
+            <!-- Grupo de etiquetas de la grilla X/Y (Escala cada 50px) -->
+            <g id="gridLabels"
+              style="display: none; fill: #64748b; font-size: 10px; font-family: monospace; user-select: none;">
+              <!-- Eje X (A lo largo de Y=120) -->
+              <text x="50" y="120">50</text>
+              <text x="100" y="120">100</text>
+              <text x="150" y="120">150</text>
+              <text x="200" y="120">200</text>
+              <text x="250" y="120">250</text>
+              <text x="300" y="120">300</text>
+              <text x="350" y="120">350</text>
+              <text x="400" y="120">400</text>
+              <text x="450" y="120">450</text>
+              <text x="500" y="120">500</text>
+              <text x="550" y="120">550</text>
+              <text x="600" y="120">600</text>
+              <text x="650" y="120">650</text>
+              <text x="700" y="120">700</text>
+              <text x="750" y="120">750</text>
+              <text x="800" y="120">800</text>
+              <text x="850" y="120">850</text>
+              <text x="900" y="120">900</text>
+              <text x="950" y="120">950</text>
+              <text x="1000" y="120">1000</text>
+              <text x="1050" y="120">1050</text>
+
+              <!-- Eje Y (Invertido: Crece hacia arriba. Base = 50) -->
+              <text x="5" y="160">500</text>
+              <text x="5" y="210">450</text>
+              <text x="5" y="260">400</text>
+              <text x="5" y="310">350</text>
+              <text x="5" y="360">300</text>
+              <text x="5" y="410">250</text>
+              <text x="5" y="460">200</text>
+              <text x="5" y="510">150</text>
+              <text x="5" y="560">100</text>
+              <text x="5" y="610">50</text>
+            </g>
+            <g id="edgesLayer"></g>
+            <g id="nodesLayer"></g>
+            <g id="routeLayer"></g>
+            <g id="portEditLayer"></g>
+          </svg>
+        </section>
+        <div class="step-bar">
+          <div class="step-bar-controls">
+            <button id="stepBarPause" class="btn ghost" disabled>⏸ Pausa</button>
+            <button id="stepBarBack" class="btn ghost" disabled>⏪ Retroceder</button>
+            <button id="stepBarNext" class="btn ghost" disabled>⏩ Avanzar</button>
+            <button id="stepBarPlay" class="btn" disabled
+              style="background: linear-gradient(180deg, #10b981, #059669); border-color:#047857;">▶ Play</button>
+            <div class="step-bar-delay" title="Ritmo: segundos por paso en modo Play">
+              <button type="button" id="delayMinus" class="delay-btn" aria-label="Más lento">−</button>
+              <span id="delayValue">Ritmo</span>
+              <button type="button" id="delayPlus" class="delay-btn" aria-label="Más rápido">+</button>
+            </div>
+          </div>
+          <div class="step-bar-params">
+            <button id="portEditBtn" class="btn btn-flat" title="Ajustar puntos de conexión">✎ Ajustar conexiones</button>
+            <button id="gridToggleBtn" class="btn btn-flat" title="Mostrar u Ocultar Cuadrícula">⊞ Grid</button>
+            <button id="loadDemoBtn" class="btn btn-flat">▶ Demo</button>
+            <button id="downloadDemoBtn" class="btn btn-flat">⬇ Excel Demo</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="panel">
+        <h3>Eventos</h3>
+        <div id="eventList" class="panel-body"></div>
+        <div class="steps-title">Pasos del evento</div>
+        <div id="stepsPanel" class="panel-body"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Globo descripción del nodo (clic en ⓘ) -->
+  <div id="nodeGlobo" class="node-globo"></div>
+
+  <!-- Modal de Ayuda -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Instrucciones y Modelo de Datos</h2>
+        <button id="closeHelpBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Herramienta genérica para diagramar actores y simular flujos (eventos) que recorren el grafo. Sirve para
+          procesos, integraciones, casos de uso o cualquier secuencia paso a paso.</p>
+
+        <h3>Cómo funciona</h3>
+        <ul>
+          <li><strong>Lienzo:</strong> Arrastra los nodos para organizar el diagrama. Haz clic en el icono
+            <strong>ⓘ</strong> de un nodo para ver su descripción (si tiene).
+          </li>
+          <li><strong>Persistencia:</strong> Posiciones y datos se guardan en el navegador al recargar.</li>
+          <li><strong>Barra superior:</strong> <em>Subir Excel</em>, <em>Mi Excel</em>, <em>Ayuda</em> y <em>Limpiar</em>. A la derecha del todo en la barra inferior: <em>Ajustar conexiones</em>, <em>Grid</em>, <em>Demo</em>, <em>Excel Demo</em>.
+          </li>
+          <li><strong>Eventos:</strong> Elige un evento en el panel derecho. <em>Seleccionar</em> para ver pasos; <em>▶
+              Ejecutar</em> inicia la simulación. En la barra inferior: <em>Play</em> para continuar, <em>Pausa</em>,
+            <em>Retroceder</em>, <em>Avanzar</em>. El control <strong>Ritmo</strong> (− / +) ajusta los segundos por
+            paso. La <strong>descripción larga</strong> del paso se muestra en la franja arriba del diagrama; debajo,
+            los indicadores de cuenta atrás. La lista de pasos usa la descripción corta.
+          </li>
+          <li><strong>Modo Demo / Excel Demo:</strong> En la barra inferior derecha, <em>Demo</em> carga el ejemplo en
+            memoria (y lo guarda). <em>Excel Demo</em> descarga la plantilla (.xlsx) con la misma estructura.</li>
+          <li><strong>Mi Excel:</strong> Exporta el estado actual a un .xlsx: posiciones de nodos (x, y), conexiones y
+            eventos con los punteros (in_port, out_port) que hayas ajustado. Si subes un Excel, mueves nodos o editas
+            punteros con «Ajustar conexiones», al descargar <em>Mi Excel</em> todo queda actualizado.</li>
+          <li><strong>✎ Ajustar conexiones:</strong> Botón en la barra inferior. Activa el modo, selecciona un evento y
+            expande un paso para elegir la conexión (puerto) a editar.</li>
+        </ul>
+
+        <h3>Estructura del Excel</h3>
+        <p>El archivo debe tener <strong>4 hojas</strong> (puedes descargar la plantilla con el botón <em>Excel Demo</em> en la barra inferior, o <button
+            onclick="downloadDemo(); document.getElementById('helpModal').classList.remove('active');"
+            style="background:none; border:none; color:var(--btn); text-decoration:underline; cursor:pointer; padding:0; font-size:inherit;">descargar
+            ahora</button>):</p>
+
+        <h4>1. <code>Nodos</code></h4>
+        <ul>
+          <li><code>id</code>: Identificador único (ej. <em>API, DB, SERVICIO_A</em>).</li>
+          <li><code>label</code>: Nombre visible en el diagrama.</li>
+          <li><code>type</code>: Tipo o categoría (ej. <em>Entrada, Servicio, Datos</em>).</li>
+          <li><code>x</code> / <code>y</code>: Posición inicial en el lienzo.</li>
+          <li><code>visible</code>: 1 o 0. (Oculta actores sin borrar el dato).</li>
+          <li><code>description</code>: (Opcional) Texto que se muestra al hacer clic en el <strong>ⓘ</strong>.</li>
+        </ul>
+
+        <h4>2. <code>Conexiones</code></h4>
+        <ul>
+          <li>Solo posee 2 columnas: <code>from</code>, <code>to</code> indicando los IDs de nodos que enlazan
+            estáticamente de antemano.</li>
+        </ul>
+
+        <h4>3. <code>Procesos</code> (La cabecera del negocio)</h4>
+        <ul>
+          <li><code>id</code>: ID del proceso (ej. <em>P-001, PagoTarjeta</em>).</li>
+          <li><code>nombre</code>: Nombre amigable y corto del proceso.</li>
+          <li><code>descripcion</code>: Nota del proceso.</li>
+        </ul>
+
+        <h4>4. <code>Pasos</code> (El Guión Transitivo)</h4>
+        <ul>
+          <li><code>proceso_id</code>: ID del proceso al que pertecene (ej. P-001).</li>
+          <li><code>secuencia</code>: Orden de ejecución numérico (1, 2, 3…).</li>
+          <li><code>nodo</code>: Actor / Sistema que inicia la acción (Origen).</li>
+          <li><code>accion</code>: Breve descripción de lo que ocurre en este milísegundo. Muta a la franja superior y
+            panel.</li>
+          <li><code>puerta_salida</code>: Vía del puerto geométrico de origen (<code>R</code>, <code>UL</code>,
+            <code>DR</code>, etc).
+          </li>
+          <li><code>destino</code>: A qué Actor viaja esta ejecución.</li>
+          <li><code>puerta_destino</code>: Vía de acople geométrico para recibir en desitno (<code>L</code>,
+            <code>UR</code>, etc).
+          </li>
+        </ul>
+        <p><em>Con este guión Secuencial asíncrono, cada acción "viaja" uniendo gráficamente Nodo y Destino.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    const NODE_W = 210;
+    const NODE_H = 54;
+    const VIEW_W = 1100;
+    const VIEW_H = 620;
+
+    const state = {
+      actors: [],
+      edges: [],
+      procesos: [],
+      pasos: [],
+      selectedTxId: null,
+      stepIndex: -1,
+      portConnectionIdx: -1,   // índice de la CONEXIÓN seleccionada para editar puertos (0 = flecha de paso[0]→paso[1])
+      portStepExpandedIdx: -1, // paso actualmente expandido en panel de edición de puertos
+      runTimer: null,
+      countdownTimer: null,
+      countdownSecond: 0,
+      stepDelaySeconds: 4,
+      warnings: [],
+      dragging: null
+    };
+
+    const DEMO = {
+      actors: [
+        { id: 'CLIENT', label: 'Cliente', type: 'Entrada', x: 40, y: 380, visible: 1, description: 'Punto de entrada del usuario o sistema externo.' },
+        { id: 'CHANNEL_A', label: 'Canal A', type: 'Entrada', x: 40, y: 280, visible: 1, description: 'Otro canal de entrada (web, API, etc.).' },
+        { id: 'GATEWAY', label: 'API Gateway', type: 'Gateway', x: 280, y: 330, visible: 1, description: 'Enruta y valida las peticiones entrantes.' },
+        { id: 'SVC_ORCH', label: 'Orquestador', type: 'Servicio', x: 520, y: 380, visible: 1, description: 'Coordina la secuencia de llamadas a otros servicios.' },
+        { id: 'SVC_A', label: 'Servicio A', type: 'Servicio', x: 520, y: 240, visible: 1, description: 'Lógica de negocio o integración específica.' },
+        { id: 'SVC_B', label: 'Servicio B', type: 'Servicio', x: 520, y: 120, visible: 1, description: 'Segundo servicio (validación, reglas, etc.).' },
+        { id: 'DB', label: 'Base de datos', type: 'Datos', x: 760, y: 240, visible: 1, description: 'Persistencia y consulta de datos.' },
+        { id: 'CACHE', label: 'Caché', type: 'Datos', x: 760, y: 120, visible: 1, description: 'Almacenamiento en caché para respuestas rápidas.' }
+      ],
+      edges: [
+        { from: 'CLIENT', to: 'GATEWAY' },
+        { from: 'CHANNEL_A', to: 'GATEWAY' },
+        { from: 'GATEWAY', to: 'SVC_ORCH' },
+        { from: 'SVC_ORCH', to: 'SVC_A' },
+        { from: 'SVC_ORCH', to: 'SVC_B' },
+        { from: 'SVC_A', to: 'DB' },
+        { from: 'SVC_A', to: 'CACHE' },
+        { from: 'SVC_B', to: 'DB' }
+      ],
+      procesos: [
+        { id: 'P-001', nombre: 'Flujo principal', descripcion: 'Recorrido estándar con ida y vuelta.' },
+        { id: 'P-002', nombre: 'Flujo con validación', descripcion: 'Incluye paso alternativo por Servicio B.' },
+        { id: 'P-003', nombre: 'Consulta simple', descripcion: 'Respuesta directa desde caché.' }
+      ],
+      pasos: [
+        // P-001 - Flujo principal
+        { proceso_id: 'P-001', seq: 1, from_node: 'CLIENT', action: 'Envía petición', out_port: 'R', to_node: 'GATEWAY', in_port: 'L' },
+        { proceso_id: 'P-001', seq: 2, from_node: 'GATEWAY', action: 'Valida y enruta', out_port: 'R', to_node: 'SVC_ORCH', in_port: 'UL' },
+        { proceso_id: 'P-001', seq: 3, from_node: 'SVC_ORCH', action: 'Llama a Servicio A', out_port: 'R', to_node: 'SVC_A', in_port: 'L' },
+        { proceso_id: 'P-001', seq: 4, from_node: 'SVC_A', action: 'Consulta BD', out_port: 'UR', to_node: 'DB', in_port: 'DL' },
+        { proceso_id: 'P-001', seq: 5, from_node: 'DB', action: 'Retorna datos', out_port: 'DR', to_node: 'SVC_A', in_port: 'DR' },
+        { proceso_id: 'P-001', seq: 6, from_node: 'SVC_A', action: 'Responde al orquestador', out_port: 'DL', to_node: 'SVC_ORCH', in_port: 'R' },
+        { proceso_id: 'P-001', seq: 7, from_node: 'SVC_ORCH', action: 'Respuesta final', out_port: 'L', to_node: 'CLIENT', in_port: 'DR' },
+
+        // P-002 - Flujo con validación
+        { proceso_id: 'P-002', seq: 1, from_node: 'CHANNEL_A', action: 'Entrada por Canal A', out_port: 'R', to_node: 'GATEWAY', in_port: 'L' },
+        { proceso_id: 'P-002', seq: 2, from_node: 'GATEWAY', action: 'Enruta a orquestador', out_port: 'DR', to_node: 'SVC_ORCH', in_port: 'UR' },
+        { proceso_id: 'P-002', seq: 3, from_node: 'SVC_ORCH', action: 'Pide validación', out_port: 'DR', to_node: 'SVC_B', in_port: 'UL' },
+        { proceso_id: 'P-002', seq: 4, from_node: 'SVC_B', action: 'Validación con advertencia', out_port: 'R', to_node: 'DB', in_port: 'L' },
+
+        // P-003 - Consulta simple
+        { proceso_id: 'P-003', seq: 1, from_node: 'CLIENT', action: 'Consulta caché', out_port: 'DR', to_node: 'SVC_A', in_port: 'UL' },
+        { proceso_id: 'P-003', seq: 2, from_node: 'SVC_A', action: 'Hit y respuesta', out_port: 'R', to_node: 'CACHE', in_port: 'L' }
+      ]
+    };
+
+    const $ = sel => document.querySelector(sel);
+    const eventList = $('#eventList');
+    const stepsPanel = $('#stepsPanel');
+    const warningBox = $('#warningBox');
+    const svg = $('#diagram');
+    const nodesLayer = $('#nodesLayer');
+    const edgesLayer = $('#edgesLayer');
+    const routeLayer = $('#routeLayer');
+    const portEditLayer = $('#portEditLayer');
+
+    // Estado del modo edición de puertos
+    let portEditMode = false;
+
+    function normalize(rows, mapper) {
+      if (!Array.isArray(rows)) return [];
+      return rows.map(mapper).filter(Boolean);
+    }
+
+    function normId(v) {
+      if (v === null || v === undefined) return '';
+      return String(v).trim().toUpperCase();
+    }
+
+    // Excel I/O principal: lee hojas, tolera faltantes y normaliza columnas esperadas.
+    function loadWorkbook(workbook) {
+      // Limpiar el estado previo completo para que los nodos no se combinen
+      stopRun();
+      state.actors = [];
+      state.edges = [];
+      state.procesos = [];
+      state.pasos = [];
+      state.selectedTxId = null;
+      state.stepIndex = -1;
+
+      // Forzar destrucción visual en el DOM (SVG Layers y Sidebar) antes de hidratar nuevos
+      nodesLayer.innerHTML = '';
+      edgesLayer.innerHTML = '';
+      routeLayer.innerHTML = '';
+      portEditLayer.innerHTML = '';
+      eventList.innerHTML = '';
+      clearStepsPanel();
+
+      state.warnings = [];
+      const getRows = name => {
+        const ws = workbook.Sheets[name];
+        if (!ws) {
+          state.warnings.push(`Falta hoja ${name}.`);
+          return [];
+        }
+        return XLSX.utils.sheet_to_json(ws, { defval: '' });
+      };
+
+      const actorsRaw = getRows('Nodos');
+      const edgesRaw = getRows('Conexiones');
+      const procRaw = getRows('Procesos');
+      const pasosRaw = getRows('Pasos');
+
+      state.actors = normalize(actorsRaw, r => {
+        const id = normId(r.id);
+        if (!id) return null;
+        const desc = normId(r.description || r.tooltip || '');
+        const readY = Number(r.y) || 20;
+        const svgY = 660 - readY - NODE_H;
+
+        return {
+          id,
+          label: normId(r.label) || id,
+          type: normId(r.type) || 'N/A',
+          x: Number(r.x) || 20,
+          y: svgY,
+          visible: String(r.visible).trim() !== '0',
+          description: desc
+        };
+      });
+
+      state.edges = normalize(edgesRaw, r => {
+        const from = normId(r.from);
+        const to = normId(r.to);
+        if (!from || !to) return null;
+        return {
+          from, to
+        };
+      });
+
+      state.procesos = normalize(procRaw, r => {
+        const id = normId(r.id);
+        if (!id) return null;
+        return {
+          id,
+          nombre: normId(r.nombre) || id,
+          descripcion: normId(r.descripcion)
+        };
+      });
+
+      state.pasos = normalize(pasosRaw, r => {
+        const proceso_id = normId(r.id || r.proceso_id);
+        const from_node = normId(r.nodo || r.from_node);
+        const to_node = normId(r.destino || r.to_node);
+        if (!proceso_id || !from_node) return null;
+        return {
+          proceso_id,
+          seq: Number(r.secuencia || r.seq) || 0,
+          from_node,
+          action: normId(r.accion || r.action),
+          out_port: normId(r.puerta_salida || r.out_port),
+          to_node,
+          in_port: normId(r.puerta_destino || r.in_port)
+        };
+      });
+      state.pasos.sort((a, b) => {
+        if (a.proceso_id !== b.proceso_id) return a.proceso_id.localeCompare(b.proceso_id);
+        return a.seq - b.seq;
+      });
+
+      state.selectedTxId = null;
+      state.stepIndex = -1;
+      stopRun();
+      warningBox.textContent = state.warnings.join(' ');
+      renderEvents();
+      clearStepsPanel();
+      drawAll();
+      saveState();
+      const loadDemoEl = $('#loadDemoBtn');
+      if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
+    }
+
+    function actorMap() {
+      return new Map(state.actors.map(a => [a.id, a]));
+    }
+
+    function getConnectorPoint(actor, portName) {
+      if (!actor) return { x: 0, y: 0 };
+      const w = NODE_W;
+      const h = NODE_H;
+      const ax = actor.x;
+      const ay = actor.y;
+
+      switch (portName) {
+        case 'UL': return { x: ax + w * 0.25, y: ay };
+        case 'UR': return { x: ax + w * 0.75, y: ay };
+        case 'R': return { x: ax + w, y: ay + h * 0.5 };
+        case 'DR': return { x: ax + w * 0.75, y: ay + h };
+        case 'DL': return { x: ax + w * 0.25, y: ay + h };
+        case 'L': return { x: ax, y: ay + h * 0.5 };
+        // Por defecto o si no está definido el puerto, apuntamos al centro geométrico del actor
+        default: return { x: ax + w * 0.5, y: ay + h * 0.5 };
+      }
+    }
+
+    function drawAll() {
+      drawEdges();
+      drawNodes();
+      drawRoute();
+      drawPortDots();
+    }
+
+    // Orden cíclico de los puertos para el toggle con clic
+    const PORT_CYCLE = ['UL', 'UR', 'R', 'DR', 'DL', 'L', ''];
+
+    function nextPort(current) {
+      const idx = PORT_CYCLE.indexOf(current);
+      return PORT_CYCLE[(idx + 1) % PORT_CYCLE.length];
+    }
+
+    // EXTRAE los pasos de un Proceso
+    function getEventSteps(pid) {
+      return state.pasos.filter(p => p.proceso_id === pid);
+    }
+
+    // Dibuja los puntos de conexión interactivos para el PASO (Secuencia) seleccionado.
+    // Cuando portConnectionIdx >= 0, muestra 2 dots:
+    //   - out_port del stepFrom (nodo emisor) (cian)
+    //   - in_port  del stepTo (nodo receptor de ese mismo paso) (ámbar)
+    function drawPortDots() {
+      portEditLayer.innerHTML = '';
+      if (!portEditMode) return;
+      if (!state.selectedTxId) return;
+
+      const amap = actorMap();
+      const steps = getEventSteps(state.selectedTxId);
+      if (!steps.length) return;
+
+      const ci = state.portConnectionIdx;
+
+      // Sin conexión seleccionada: mostrar hint
+      if (ci < 0 || ci >= steps.length) {
+        const hint = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        hint.setAttribute('x', 12);
+        hint.setAttribute('y', 14);
+        hint.setAttribute('fill', '#a78bfa');
+        hint.setAttribute('font-size', '11px');
+        hint.setAttribute('font-family', 'Inter, sans-serif');
+        hint.setAttribute('style', 'pointer-events: none');
+        hint.textContent = '✎ Selecciona un paso de la lista para editar sus puertos';
+        portEditLayer.appendChild(hint);
+        return;
+      }
+
+      const PORTS = ['UL', 'UR', 'R', 'DR', 'DL', 'L'];
+      const currentStep = steps[ci]; // La secuencia seleccionada
+
+      // Dibujar dots de salida (OUT) sobre el nodo origen
+      const actorFrom = amap.get(currentStep.from_node);
+      if (actorFrom && actorFrom.visible) {
+        PORTS.forEach(portName => {
+          const pt = getConnectorPoint(actorFrom, portName);
+          const isActive = currentStep.out_port === portName;
+
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          g.setAttribute('class', 'port-dot');
+          g.dataset.role = 'out';
+          g.dataset.connIdx = ci;
+          g.dataset.portName = portName;
+
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', pt.x);
+          circle.setAttribute('cy', pt.y);
+          circle.setAttribute('r', isActive ? 8 : 5);
+          circle.setAttribute('fill', isActive ? 'rgba(34,211,238,0.9)' : 'rgba(34,211,238,0.18)');
+          circle.setAttribute('stroke', '#22d3ee');
+          circle.setAttribute('stroke-width', isActive ? '2' : '1');
+
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('class', 'port-label');
+          text.setAttribute('x', pt.x);
+          text.setAttribute('y', pt.y);
+          text.setAttribute('fill', isActive ? '#fff' : '#22d3ee');
+          text.textContent = portName;
+
+          g.append(circle, text);
+          portEditLayer.appendChild(g);
+        });
+      }
+
+      // Dibujar dots de entrada (IN) sobre el nodo destino
+      const actorTo = amap.get(currentStep.to_node);
+      if (actorTo && actorTo.visible) {
+        PORTS.forEach(portName => {
+          const pt = getConnectorPoint(actorTo, portName);
+          const isActive = currentStep.in_port === portName;
+
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          g.setAttribute('class', 'port-dot');
+          g.dataset.role = 'in';
+          g.dataset.connIdx = ci;
+          g.dataset.portName = portName;
+
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', pt.x);
+          circle.setAttribute('cy', pt.y);
+          circle.setAttribute('r', isActive ? 8 : 5);
+          circle.setAttribute('fill', isActive ? 'rgba(251,191,36,0.9)' : 'rgba(251,191,36,0.18)');
+          circle.setAttribute('stroke', '#fbbf24');
+          circle.setAttribute('stroke-width', isActive ? '2' : '1');
+
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('class', 'port-label');
+          text.setAttribute('x', pt.x);
+          text.setAttribute('y', pt.y);
+          text.setAttribute('fill', isActive ? '#fff' : '#fbbf24');
+          text.textContent = portName;
+
+          g.append(circle, text);
+          portEditLayer.appendChild(g);
+        });
+      }
+    }
+
+    // role='out' → modifica out_port del paso actual
+    // role='in'  → modifica in_port del paso actual
+    function handlePortDotClick(ev) {
+      if (!portEditMode) return;
+      const dot = ev.target.closest('.port-dot');
+      if (!dot) return;
+      ev.stopPropagation();
+
+      const role = dot.dataset.role;      // 'out' o 'in'
+      const connIdx = Number(dot.dataset.connIdx);
+      const portName = dot.dataset.portName;
+      const steps = getEventSteps(state.selectedTxId);
+      if (!steps || connIdx < 0 || connIdx >= steps.length) return;
+
+      const targetStep = steps[connIdx];
+      const field = role === 'out' ? 'out_port' : 'in_port';
+
+      const pasoIdx = state.pasos.findIndex(
+        p => p.proceso_id === targetStep.proceso_id && p.seq === targetStep.seq
+      );
+      if (pasoIdx < 0) return;
+
+      const paso = state.pasos[pasoIdx];
+
+      // Clic simple: asignar este puerto al rol correspondiente
+      // Si ya estaba asignado → desasignar (toggle)
+      if (paso[field] === portName) {
+        paso[field] = '';  // deseleccionar
+      } else {
+        paso[field] = portName;
+      }
+
+      saveState();
+      drawRoute();
+      drawPortDots();
+    }
+
+    function getActiveNodeId() {
+      if (!state.selectedTxId || state.stepIndex < 0) return null;
+      const steps = getEventSteps(state.selectedTxId);
+      // Solo el nodo emissor (from_node) permanece activo visualmente en su turno.
+      return steps[state.stepIndex] ? steps[state.stepIndex].from_node : null;
+    }
+
+    function drawNodes() {
+      const activeNodeId = getActiveNodeId();
+      nodesLayer.innerHTML = '';
+      for (const actor of state.actors) {
+        const isActive = actor.id === activeNodeId;
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node' + (actor.visible ? '' : ' hidden') + (actor.description ? ' node-has-tooltip' : '') + (isActive ? ' active-step' : ''));
+        if (actor.description) g.setAttribute('data-has-tooltip', '1');
+        g.dataset.id = actor.id;
+        g.setAttribute('transform', `translate(${actor.x},${actor.y})`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('width', NODE_W);
+        rect.setAttribute('height', NODE_H);
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('class', 'node-label');
+        label.setAttribute('x', 10);
+        label.setAttribute('y', 22);
+        label.textContent = actor.label;
+
+        const type = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        type.setAttribute('class', 'node-type');
+        type.setAttribute('x', 10);
+        type.setAttribute('y', 40);
+        type.textContent = actor.type;
+
+        const coords = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        coords.setAttribute('class', 'node-coords');
+        coords.setAttribute('x', NODE_W - 8);
+        coords.setAttribute('y', NODE_H - 8);
+        coords.setAttribute('text-anchor', 'end'); // Alinear a la derecha
+        // Invertimos visualmente el Eje Y para que crezca hacia arriba (660 como pivote)
+        coords.textContent = `X:${Math.round(actor.x)}, Y:${Math.round(660 - (actor.y + NODE_H))}`;
+
+        g.append(rect, label, type, coords);
+
+        if (actor.description) {
+          const btn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          btn.setAttribute('class', 'node-info-btn');
+          btn.dataset.nodeId = actor.id;
+          const cx = NODE_W - 16;
+          const cy = 16;
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', cx);
+          circle.setAttribute('cy', cy);
+          circle.setAttribute('r', 10);
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', cx);
+          txt.setAttribute('y', cy);
+          txt.textContent = 'ⓘ';
+          btn.append(circle, txt);
+          g.appendChild(btn);
+        }
+
+        nodesLayer.appendChild(g);
+      }
+    }
+
+    function drawEdges() {
+      edgesLayer.innerHTML = '';
+      const amap = actorMap();
+
+      for (const edge of state.edges) {
+        const from = amap.get(edge.from);
+        const to = amap.get(edge.to);
+        if (!from || !to) continue;
+        if (!from.visible || !to.visible) continue;
+
+        // Líneas estáticas: simples de centro a centro, solo muestran existencia de conexión
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('class', 'edge');
+        line.setAttribute('x1', from.x + NODE_W / 2);
+        line.setAttribute('y1', from.y + NODE_H / 2);
+        line.setAttribute('x2', to.x + NODE_W / 2);
+        line.setAttribute('y2', to.y + NODE_H / 2);
+        line.setAttribute('marker-end', 'url(#arrow)');
+        edgesLayer.appendChild(line);
+      }
+    }
+
+    function drawRoute() {
+      routeLayer.innerHTML = '';
+      if (!state.selectedTxId) return;
+
+      const amap = actorMap();
+      const steps = getEventSteps(state.selectedTxId);
+      if (!steps.length) return;
+
+      // Dibuja una flecha curvada por cada paso (origen a destino directo)
+      for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+
+        const actorFrom = amap.get(step.from_node);
+        const actorTo = amap.get(step.to_node);
+        if (!actorFrom || !actorTo || !actorFrom.visible || !actorTo.visible) continue;
+
+        const p1 = getConnectorPoint(actorFrom, step.out_port);
+        const p2 = getConnectorPoint(actorTo, step.in_port);
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        let d = '';
+        if (Math.abs(p1.y - p2.y) < 10) {
+          d = `M ${p1.x},${p1.y} C ${(p1.x + p2.x) / 2},${p1.y} ${(p1.x + p2.x) / 2},${p2.y} ${p2.x},${p2.y}`;
+        } else {
+          d = `M ${p1.x},${p1.y} C ${p1.x},${(p1.y + p2.y) / 2} ${p2.x},${(p1.y + p2.y) / 2} ${p2.x},${p2.y}`;
+        }
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'none');
+
+        const isActiveAnim = (state.stepIndex === i);
+        const isBack = p2.x < p1.x;
+        const markerClass = isBack ? 'url(#arrow-route-vuelta)' : 'url(#arrow-route-ida)';
+
+        let strokeColor = '#64748b'; // gris pasos futuros/no anim
+        let cssClass = 'route';
+
+        if (isActiveAnim) {
+          strokeColor = '#22d3ee'; // cian en vuelo
+          if (!portEditMode && state.runTimer) {
+            cssClass = 'route-path ida';
+          } else {
+            cssClass = 'route-path vuelta';
+            strokeColor = '#fbbf24'; // resaltar ambar estático en selección/pausa
+          }
+        } else if (i < state.stepIndex) {
+          strokeColor = '#a8a29e'; // rastro gris mate pasos pasados
+        }
+
+        path.setAttribute('stroke', strokeColor);
+        path.setAttribute('class', cssClass);
+        path.setAttribute('marker-end', markerClass);
+        routeLayer.appendChild(path);
+
+        // Texto descriptivo "action" en el medio de la flecha cuando vuela
+        if (isActiveAnim || (i === state.portConnectionIdx && portEditMode)) {
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', (p1.x + p2.x) / 2);
+          text.setAttribute('y', ((p1.y + p2.y) / 2) - 8);
+          text.setAttribute('fill', strokeColor);
+          text.setAttribute('font-size', '11px');
+          text.setAttribute('font-weight', '500');
+          text.setAttribute('text-anchor', 'middle');
+          text.textContent = step.action || `Paso ${step.seq}`;
+          routeLayer.appendChild(text);
+        }
+      }
+    }
+
+    function renderActors() {
+      // Lista de nodos eliminada (siempre visibles en el diagrama)
+    }
+
+    function renderEvents() {
+      eventList.innerHTML = '';
+      state.procesos.forEach((proc, idx) => {
+        const selected = proc.id === state.selectedTxId;
+        const item = document.createElement('div');
+        item.className = 'event-item';
+        item.innerHTML = `
+          <div>
+            <div><strong>${proc.nombre}</strong></div>
+            <div class="muted">${proc.id} ${proc.descripcion ? '· ' + proc.descripcion : ''}</div>
+          </div>
+          <div class="tx-actions">
+            <button class="small-btn ${selected ? 'active' : ''}" data-action="select" data-id="${proc.id}">Seleccionar</button>
+            <button class="small-btn" ${idx === 0 ? 'id="runFirstEvent"' : ''} data-action="run" data-id="${proc.id}">▶ Ejecutar</button>
+          </div>
+        `;
+        eventList.appendChild(item);
+      });
+    }
+
+    function getEventSteps(eventId) {
+      return state.pasos.filter(p => p.proceso_id === eventId);
+    }
+
+    function renderSteps(txId, activeIndex = -1) {
+      stepsPanel.innerHTML = '';
+      const steps = getEventSteps(txId);
+      if (!steps.length) {
+        stepsPanel.innerHTML = '<div class="muted">Sin pasos para este evento.</div>';
+        updateStepBar(null);
+        drawNodes();
+        return;
+      }
+      steps.forEach((s, idx) => {
+        let baseClass = 'step-item';
+        if (idx === activeIndex) baseClass += ' active';
+        if (portEditMode) baseClass += ' port-edit-item';
+        if (portEditMode && state.portStepExpandedIdx === idx) baseClass += ' accordion-active';
+
+        const div = document.createElement('div');
+        div.className = baseClass;
+
+        // En modo Puertos ON: el botón Editar Línea se muestra para el paso completo (Acordeón)
+        let portBtns = '';
+        if (portEditMode && state.portStepExpandedIdx === idx) {
+          const ciFrom = state.portConnectionIdx;
+          const isSel = ciFrom === idx ? ' port-btn-active-out' : '';
+          portBtns = `<div class="port-btns-expanded" style="margin-top: 8px; display: flex; gap: 8px;">
+               <button class="port-btn out-btn${isSel}" data-conn="${idx}" title="Editar vector entre ${s.from_node} y ${s.to_node}">Editar Ruta</button>
+              </div>`;
+        }
+
+        div.innerHTML = `<div><strong>#${s.seq}</strong> ${s.from_node} ➔ ${s.to_node}</div><div class="muted">${s.action}</div>${portBtns}`;
+
+        if (portEditMode) {
+          div.addEventListener('click', ev => {
+            const btn = ev.target.closest('.port-btn');
+            if (btn) {
+              ev.stopPropagation();
+              const ci = Number(btn.dataset.conn);
+              state.portConnectionIdx = (state.portConnectionIdx === ci) ? -1 : ci; // toggle
+              renderSteps(txId, activeIndex);
+              drawPortDots();
+              if (state.portConnectionIdx >= 0) {
+                updateStepBar(steps[state.portConnectionIdx]);
+              }
+              return;
+            }
+
+            // Clicked the step row body (accordion toggle)
+            if (state.portStepExpandedIdx === idx) {
+              state.portStepExpandedIdx = -1;
+              state.portConnectionIdx = -1; // Desmarcar puntos al colapsar
+            } else {
+              state.portStepExpandedIdx = idx;
+              state.portConnectionIdx = -1; // Limpiar selección anterior
+            }
+            renderSteps(txId, activeIndex);
+            drawPortDots();
+          });
+        }
+
+        stepsPanel.appendChild(div);
+      });
+
+      if (activeIndex >= 0 && activeIndex < steps.length) {
+        updateStepBar(steps[activeIndex]);
+      } else {
+        updateStepBar(null);
+      }
+      drawNodes();
+    }
+
+    function updateStepBar(stepData) {
+      const textWrap = $('#stepDescTopTextWrap');
+      const topText = $('#stepDescTopText');
+      const btnPause = $('#stepBarPause');
+      const btnBack = $('#stepBarBack');
+      const btnNext = $('#stepBarNext');
+      const btnPlay = $('#stepBarPlay');
+      const steps = state.selectedTxId ? getEventSteps(state.selectedTxId) : [];
+      const hasSteps = steps.length > 0;
+      const isRunning = !!state.runTimer;
+      if (stepData === undefined && state.selectedTxId && state.stepIndex >= 0 && steps[state.stepIndex]) {
+        stepData = steps[state.stepIndex];
+      }
+
+      if (stepData) {
+        const text = (stepData.action && stepData.action.trim()) ? stepData.action : `Transacción hacia ${stepData.to_node}`;
+        const topLabel = `<span style="font-weight: 600; color:var(--text); margin-right:6px;">Paso ${stepData.seq}: ${stepData.from_node} ➔ ${stepData.to_node}</span> <span style="color:var(--muted); font-weight: normal;"> - ${text}</span>`;
+        textWrap.classList.remove('visible');
+        textWrap.classList.add('exit');
+        clearTimeout(updateStepBar._exitTimer);
+        updateStepBar._exitTimer = setTimeout(() => {
+          topText.innerHTML = topLabel;
+          textWrap.classList.remove('exit');
+          textWrap.classList.add('visible');
+        }, 220);
+      } else {
+        textWrap.classList.remove('visible');
+        textWrap.classList.add('exit');
+        clearTimeout(updateStepBar._exitTimer);
+        updateStepBar._exitTimer = setTimeout(() => {
+          topText.textContent = '';
+          textWrap.classList.remove('exit');
+        }, 220);
+      }
+
+      btnPause.disabled = !isRunning;
+      btnBack.disabled = !hasSteps || state.stepIndex < 0;
+      btnNext.disabled = !hasSteps || state.stepIndex >= steps.length - 1;
+      btnPlay.disabled = !hasSteps;
+    }
+
+    function clearStepsPanel() {
+      stepsPanel.innerHTML = '<div class="muted">Selecciona un evento para ver pasos.</div>';
+      updateStepBar(null);
+    }
+
+    function selectTx(txId) {
+      state.selectedTxId = txId;
+      state.stepIndex = -1;
+      state.portConnectionIdx = -1;
+      state.portStepExpandedIdx = -1;
+      stopRun();
+      renderEvents();
+      renderSteps(txId, -1);
+      drawRoute();
+      drawPortDots();
+      drawNodes();
+    }
+
+    function stopRun() {
+      if (state.runTimer) {
+        clearInterval(state.runTimer);
+        state.runTimer = null;
+      }
+      // Eliminamos countdownTimer por completo
+      renderCountdownSquares();
+    }
+
+    function renderCountdownSquares() {
+      const el = $('#stepDescCountdown');
+      if (!el) return;
+      const totalSeconds = state.stepDelaySeconds;
+      const n = Math.max(1, totalSeconds - 1);
+      const filled = state.runTimer ? Math.min(state.countdownSecond, n) : 0;
+      el.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (i < filled ? ' filled' : '');
+        dot.setAttribute('aria-hidden', 'true');
+        el.appendChild(dot);
+      }
+      el.style.display = state.runTimer && state.stepIndex >= 0 ? 'flex' : 'none';
+    }
+
+    function runTx(txId = state.selectedTxId) {
+      if (!txId) return;
+      if (state.selectedTxId !== txId) selectTx(txId);
+
+      stopRun();
+      const steps = getEventSteps(txId);
+      drawRoute();
+
+      if (!steps.length) {
+        state.stepIndex = -1;
+        renderSteps(txId, -1);
+        return;
+      }
+
+      state.stepIndex = 0;
+      state.countdownSecond = 0;
+
+      renderSteps(txId, 0);
+      updateStepBar();
+      drawNodes();
+      renderCountdownSquares();
+
+      // Un solo timer central (reloj maestro de 1 segundo)
+      state.runTimer = setInterval(() => {
+        state.countdownSecond++;
+
+        // Si alcanzamos el límite de segundos por paso, avanzamos al siguiente
+        if (state.countdownSecond >= state.stepDelaySeconds) {
+          state.stepIndex++;
+
+          if (state.stepIndex >= steps.length) {
+            stopRun();
+            state.stepIndex = steps.length - 1;
+            updateStepBar();
+            drawNodes();
+            return;
+          }
+
+          state.countdownSecond = 0;
+          renderSteps(txId, state.stepIndex);
+          updateStepBar();
+          drawNodes();
+        }
+
+        // Actualizamos cuadritos cada segundo independiente de si cambió de paso
+        renderCountdownSquares();
+      }, 1000);
+    }
+
+    function stepTx() {
+      if (!state.selectedTxId) return;
+      stopRun();
+      const steps = getEventSteps(state.selectedTxId);
+      if (!steps.length) return;
+
+      if (state.stepIndex >= steps.length - 1) {
+        state.stepIndex = -1;
+      } else {
+        state.stepIndex++;
+      }
+
+      renderSteps(state.selectedTxId, state.stepIndex);
+      drawRoute();
+      drawPortDots();
+    }
+
+    function stepBack() {
+      if (!state.selectedTxId) return;
+      stopRun();
+      const steps = getEventSteps(state.selectedTxId);
+      if (!steps.length) return;
+
+      if (state.stepIndex <= 0) {
+        state.stepIndex = -1;
+      } else {
+        state.stepIndex--;
+      }
+
+      renderSteps(state.selectedTxId, state.stepIndex);
+      drawRoute();
+      drawPortDots();
+    }
+
+    function clearSelection() {
+      stopRun();
+      state.selectedTxId = null;
+      state.stepIndex = -1;
+      renderEvents();
+      clearStepsPanel();
+      drawRoute();
+      drawNodes();
+    }
+
+    function applyDemo() {
+      state.actors = DEMO.actors.map(a => ({ ...a, visible: a.visible !== 0 }));
+      state.edges = DEMO.edges.map(e => ({ ...e }));
+
+      if (DEMO.procesos) {
+        state.procesos = DEMO.procesos.map(p => ({ ...p }));
+      } else {
+        state.procesos = [];
+      }
+
+      if (DEMO.pasos) {
+        state.pasos = DEMO.pasos.map(p => ({ ...p }));
+      } else {
+        state.pasos = [];
+      }
+
+      warningBox.textContent = '';
+      renderActors();
+      renderEvents();
+      clearStepsPanel();
+      drawAll();
+      saveState();
+      const loadDemoEl = $('#loadDemoBtn');
+      if (loadDemoEl) { loadDemoEl.textContent = 'Demo Activo'; loadDemoEl.classList.add('port-edit-active'); }
+    }
+
+    function emptyState() {
+      state.actors = [];
+      state.edges = [];
+      state.casos = [];
+      state.selectedTxId = null;
+      state.stepIndex = -1;
+      stopRun();
+      warningBox.textContent = 'Aplicación vacía. Sube un Excel (Subir Excel) o usa Modo Demo.';
+      renderActors();
+      renderEvents();
+      clearStepsPanel();
+      drawAll();
+      saveState();
+      const loadDemoEl = $('#loadDemoBtn');
+      if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
+    }
+
+    // Descarga la plantilla Excel Demo (mismo contenido que Modo Demo)
+    function downloadDemo() {
+      try {
+        const demoEdges = DEMO.edges.map(e => ({ from: e.from, to: e.to }));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.actors), 'Nodos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(demoEdges), 'Conexiones');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.procesos), 'Procesos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.pasos), 'Pasos');
+        XLSX.writeFile(wb, 'Excel_Demo.xlsx');
+      } catch (err) {
+        console.error('Error generando Excel Demo', err);
+        alert('No se pudo generar el Excel Demo. Revisa consola.');
+      }
+    }
+
+    // Exporta el estado actual en memoria (con todos los ajustes de puertos hechos en la web)
+    function exportCurrentState() {
+      if (!state.actors.length && !state.procesos.length) {
+        alert('No hay datos para exportar. Sube un Excel o usa Modo Demo primero.');
+        return;
+      }
+      try {
+        // Mapear actors al formato de columnas que espera la hoja Nodos
+        const actorRows = state.actors.map(a => ({
+          id: a.id,
+          label: a.label,
+          type: a.type,
+          x: Math.round(a.x),
+          y: Math.round(660 - (a.y + NODE_H)), // Mapeo Inverso a Cartesiano visual
+          visible: a.visible ? 1 : 0,
+          description: a.description || ''
+        }));
+
+        const edgeRows = state.edges.map(e => ({
+          from: e.from,
+          to: e.to
+        }));
+
+        const procRows = state.procesos.map(p => ({
+          id: p.id,
+          nombre: p.nombre,
+          descripcion: p.descripcion || ''
+        }));
+
+        const pasoRows = state.pasos.map(p => ({
+          id: p.proceso_id,
+          secuencia: p.seq,
+          nodo: p.from_node,
+          accion: p.action || '',
+          puerta_salida: p.out_port || '',
+          destino: p.to_node || '',
+          puerta_destino: p.in_port || ''
+        }));
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(actorRows), 'Nodos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(edgeRows), 'Conexiones');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(procRows), 'Procesos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pasoRows), 'Pasos');
+
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mn = String(now.getMinutes()).padStart(2, '0');
+        const filename = `${yyyy}${mm}${dd}${hh}${mn}_Diagrama.xlsx`;
+        XLSX.writeFile(wb, filename);
+        warningBox.textContent = `✓ Descargado: ${filename}`;
+        setTimeout(() => { warningBox.textContent = ''; }, 4000);
+      } catch (err) {
+        console.error('Error exportando estado', err);
+        alert('No se pudo exportar. Revisa consola.');
+      }
+    }
+
+    // Drag crítico: convertir pointer screen->SVG, y usar coordenadas base startPointer/startNode.
+    function svgPointFromEvent(evt) {
+      const pt = svg.createSVGPoint();
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      const matrix = svg.getScreenCTM();
+      if (!matrix) return { x: 0, y: 0 };
+      return pt.matrixTransform(matrix.inverse());
+    }
+    function clampNode(actor) {
+      actor.x = Math.max(0, Math.min(VIEW_W - NODE_W, actor.x));
+      // Restringimos 110px por arriba para que los nodos no queden eclipsados bajo
+      // la franja de descripción superior (.step-desc-top) ni botones
+      actor.y = Math.max(110, Math.min(VIEW_H - NODE_H, actor.y));
+    }
+
+    function attachEvents() {
+      $('#fileInput').addEventListener('change', async ev => {
+        const file = ev.target.files?.[0];
+        if (!file) return;
+        try {
+          const ab = await file.arrayBuffer();
+          const wb = XLSX.read(ab, { type: 'array' });
+          loadWorkbook(wb);
+        } catch (err) {
+          console.error('Error leyendo XLSX', err);
+          warningBox.textContent = 'No se pudo cargar el Excel.';
+        }
+        // Resetea el input para permitir volver a cargar el mismo archivo tras ser modificado
+        ev.target.value = '';
+      });
+
+      $('#helpBtn').addEventListener('click', () => $('#helpModal').classList.add('active'));
+      $('#closeHelpBtn').addEventListener('click', () => $('#helpModal').classList.remove('active'));
+      $('#helpModal').addEventListener('click', ev => {
+        if (ev.target === $('#helpModal')) $('#helpModal').classList.remove('active');
+      });
+
+      $('#loadDemoBtn').addEventListener('click', () => {
+        const el = $('#loadDemoBtn');
+        if (el && el.classList.contains('port-edit-active')) {
+          emptyState();
+          el.textContent = '▶ Demo';
+          el.classList.remove('port-edit-active');
+        } else {
+          applyDemo();
+        }
+      });
+      $('#downloadDemoBtn').addEventListener('click', downloadDemo);
+      $('#clearBtn').addEventListener('click', clearSelection);
+
+      $('#stepBarPause').addEventListener('click', () => { stopRun(); updateStepBar(); drawNodes(); });
+      $('#stepBarBack').addEventListener('click', stepBack);
+      $('#stepBarNext').addEventListener('click', stepTx);
+      $('#stepBarPlay').addEventListener('click', () => runTx(state.selectedTxId));
+
+      function refreshDelayDisplay() {
+        const el = $('#delayValue');
+        if (el) el.textContent = 'Ritmo';
+        const minus = $('#delayMinus');
+        const plus = $('#delayPlus');
+        if (minus) minus.disabled = state.stepDelaySeconds <= 2;
+        if (plus) plus.disabled = state.stepDelaySeconds >= 10;
+      }
+      refreshDelayDisplay();
+      $('#delayMinus').addEventListener('click', () => {
+        if (state.stepDelaySeconds <= 2) return;
+        state.stepDelaySeconds--;
+        refreshDelayDisplay();
+      });
+      $('#delayPlus').addEventListener('click', () => {
+        if (state.stepDelaySeconds >= 10) return;
+        state.stepDelaySeconds++;
+        refreshDelayDisplay();
+      });
+
+      // Botón de modo edición de puertos
+      const portEditBtn = $('#portEditBtn');
+      portEditBtn.addEventListener('click', () => {
+        portEditMode = !portEditMode;
+        portEditBtn.classList.toggle('port-edit-active', portEditMode);
+        portEditBtn.textContent = portEditMode ? 'Editor Conexiones ON' : '✎ Ajustar conexiones';
+        if (portEditMode && !state.selectedTxId) {
+          warningBox.textContent = 'Selecciona un evento para activar los puntos de edición.';
+          setTimeout(() => { warningBox.textContent = ''; }, 3000);
+        }
+
+        // Reset properties
+        state.portStepExpandedIdx = -1;
+        state.portConnectionIdx = -1;
+
+        renderSteps(state.selectedTxId, state.stepIndex);
+        drawPortDots();
+      });
+
+      // Botón Grid ON/OFF
+      const gridToggleBtn = $('#gridToggleBtn');
+      const gridRect = $('#gridRect');
+      const gridLabels = $('#gridLabels');
+      let gridOn = false;
+      gridToggleBtn.addEventListener('click', () => {
+        gridOn = !gridOn;
+        gridRect.style.display = gridOn ? 'block' : 'none';
+        gridLabels.style.display = gridOn ? 'block' : 'none';
+        gridToggleBtn.classList.toggle('port-edit-active', gridOn);
+        gridToggleBtn.textContent = gridOn ? 'Grid Activo' : '⊞ Grid';
+      });
+
+      // Botón de exportar estado actual
+      $('#exportBtn').addEventListener('click', exportCurrentState);
+
+      // Clics en los dots de edición de puertos
+      portEditLayer.addEventListener('click', handlePortDotClick);
+
+      const nodeGlobo = $('#nodeGlobo');
+      nodesLayer.addEventListener('click', ev => {
+        const btn = ev.target.closest('.node-info-btn');
+        if (!btn) return;
+        ev.stopPropagation();
+        ev.preventDefault();
+        const nodeId = btn.dataset.nodeId;
+        const actor = state.actors.find(a => a.id === nodeId);
+        if (!actor || !actor.description) return;
+        if (nodeGlobo.classList.contains('visible') && nodeGlobo.dataset.nodeId === nodeId) {
+          nodeGlobo.classList.remove('visible');
+          nodeGlobo.removeAttribute('data-node-id');
+          return;
+        }
+        nodeGlobo.textContent = actor.description;
+        nodeGlobo.dataset.nodeId = nodeId;
+        nodeGlobo.classList.add('visible');
+        const r = btn.getBoundingClientRect();
+        nodeGlobo.style.left = Math.max(8, r.left) + 'px';
+        nodeGlobo.style.top = (r.bottom + 8) + 'px';
+        nodeGlobo.style.right = 'auto';
+        requestAnimationFrame(() => {
+          const gl = nodeGlobo.getBoundingClientRect();
+          if (gl.right > window.innerWidth - 8) nodeGlobo.style.left = (window.innerWidth - gl.width - 8) + 'px';
+          if (gl.bottom > window.innerHeight - 8) nodeGlobo.style.top = (r.top - gl.height - 8) + 'px';
+        });
+      });
+      document.addEventListener('click', ev => {
+        if (!ev.target.closest('#nodeGlobo') && !ev.target.closest('.node-info-btn')) {
+          nodeGlobo.classList.remove('visible');
+          nodeGlobo.removeAttribute('data-node-id');
+        }
+      });
+
+      eventList.addEventListener('click', ev => {
+        const btn = ev.target.closest('button[data-action]');
+        if (!btn) return;
+        const txId = btn.dataset.id;
+        if (!txId) return;
+        if (btn.dataset.action === 'select') selectTx(txId);
+        if (btn.dataset.action === 'run') runTx(txId);
+      });
+
+      svg.addEventListener('pointerdown', ev => {
+        if (ev.target.closest('.node-info-btn')) return;
+        const nodeEl = ev.target.closest('.node');
+        if (!nodeEl) return;
+        const id = nodeEl.dataset.id;
+
+        const actor = state.actors.find(a => a.id === id);
+        if (!actor) return;
+
+        const p = svgPointFromEvent(ev);
+        state.dragging = {
+          actor,
+          startPointer: p,
+          startNode: { x: actor.x, y: actor.y }
+        };
+
+        svg.setPointerCapture(ev.pointerId);
+      });
+
+      svg.addEventListener('pointermove', ev => {
+        if (!state.dragging) return;
+        const p = svgPointFromEvent(ev);
+        const { actor, startPointer, startNode } = state.dragging;
+
+        actor.x = startNode.x + (p.x - startPointer.x);
+        actor.y = startNode.y + (p.y - startPointer.y);
+        clampNode(actor);
+
+        drawAll();
+      });
+
+      const finishDrag = () => {
+        if (state.dragging) {
+          state.dragging = null;
+          saveState();
+        }
+      };
+      svg.addEventListener('pointerup', finishDrag);
+      svg.addEventListener('pointercancel', finishDrag);
+      svg.addEventListener('lostpointercapture', finishDrag);
+    }
+
+    function saveState() {
+      const dataToSave = {
+        actors: state.actors.map(a => ({ ...a })),
+        edges: state.edges.map(e => ({ ...e })),
+        procesos: state.procesos.map(p => ({ ...p })),
+        pasos: state.pasos.map(p => ({ ...p }))
+      };
+      localStorage.setItem('diagramaActoresData', JSON.stringify(dataToSave));
+    }
+
+    attachEvents();
+
+    // Al cargar la página, intentar recuperar de localStorage o usar DEMO
+    const saved = localStorage.getItem('diagramaActoresData');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        state.actors = (parsed.actors || []).map(a => ({ ...a, description: a.description || '' }));
+        state.edges = parsed.edges || [];
+        state.procesos = parsed.procesos || [];
+        state.pasos = parsed.pasos || [];
+
+        if (state.actors.length === 0 && state.procesos.length === 0) {
+          emptyState();
+        } else {
+          warningBox.textContent = '';
+          renderActors();
+          renderEvents();
+          clearStepsPanel();
+          drawAll();
+        }
+      } catch (err) {
+        console.error('Error parseando state guardado', err);
+        emptyState();
+      }
+    } else {
+      emptyState();
+    }
+
+    if (location.hash === '#demo') {
+      applyDemo();
+      setTimeout(() => {
+        if (state.procesos && state.procesos.length > 0) {
+          runTx(state.procesos[0].id);
+        }
+      }, 600);
+    }
+  </script>
+</body>
+
+</html>
