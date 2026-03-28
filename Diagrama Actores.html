@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Diagrama de Actores 2.0 — Simulador de Eventos</title>
+  <title>Diagrama</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -44,10 +44,28 @@
     .top-bar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      gap: 10px 16px;
+      flex-wrap: wrap;
       background: rgba(17, 24, 39, .95);
       border-bottom: 1px solid var(--line);
       padding: 8px 12px;
+      flex-shrink: 0;
+    }
+
+    .top-bar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1 1 200px;
+      min-width: 0;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
       flex-shrink: 0;
     }
 
@@ -246,16 +264,6 @@
       cursor: pointer;
     }
 
-    .warning {
-      margin-left: auto;
-      color: #fbbf24;
-      font-size: .85rem;
-      max-width: 48%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
     .layout {
       display: grid;
       grid-template-columns: 1fr 340px;
@@ -266,6 +274,7 @@
     }
 
     .center-wrap {
+      position: relative;
       display: flex;
       flex-direction: column;
       min-height: 0;
@@ -277,28 +286,14 @@
       flex: 1;
       min-height: 0;
       position: relative;
-    }
-
-    .center-toolbar {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .center-toolbar .warning {
-      max-width: 200px;
-      margin-right: 0;
+      z-index: 0;
     }
 
     .step-desc-top {
       position: absolute;
       left: 0;
       right: 0;
-      top: 48px;
+      top: 12px;
       z-index: 8;
       padding: 12px 20px;
       text-align: center;
@@ -308,6 +303,27 @@
       font-size: 1.2rem;
       font-weight: 700;
       line-height: 1.45;
+    }
+
+    .step-pause-toast {
+      position: absolute;
+      left: 16px;
+      top: 10px;
+      z-index: 9;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(251, 191, 36, 0.95);
+      color: #78350f;
+      border: 1px solid rgba(180, 83, 9, 0.45);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+    }
+
+    .step-pause-toast[hidden] {
+      display: none !important;
     }
 
     .step-desc-text {
@@ -357,6 +373,8 @@
     }
 
     .step-bar {
+      position: relative;
+      z-index: 0;
       flex: 0 0 auto;
       min-height: 52px;
       background: #fff;
@@ -418,6 +436,29 @@
     .step-bar-controls .btn {
       padding: 6px 14px;
       font-size: 0.85rem;
+    }
+
+    .step-bar-play-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 7.5rem;
+      font-weight: 700;
+      color: #fff;
+      border-width: 2px;
+      background: linear-gradient(180deg, #10b981, #059669);
+      border-color: #047857;
+    }
+
+    .step-bar-play-btn.step-bar-play--running {
+      background: linear-gradient(180deg, #f59e0b, #d97706);
+      border-color: #b45309;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+    }
+
+    .step-bar-play-btn.step-bar-play--resume {
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.75), 0 4px 14px rgba(16, 185, 129, 0.35);
+      border-color: #fbbf24;
     }
 
     .step-bar-delay {
@@ -654,8 +695,8 @@
     }
 
     .route-path.vuelta {
-      stroke: #fbbf24;
-      filter: drop-shadow(0 0 6px rgba(251, 191, 36, .45));
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 6px rgba(34, 211, 238, .45));
     }
 
     @keyframes dashMove {
@@ -774,6 +815,37 @@
 
     .modal-body ul {
       padding-left: 20px;
+    }
+
+    .modal-content.modal-dialog {
+      max-width: 440px;
+      max-height: none;
+      overflow: visible;
+    }
+
+    .modal-dialog .modal-body p {
+      margin: 0;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .modal-footer .btn-primary-reset {
+      background: linear-gradient(180deg, #10b981, #059669);
+      border-color: #047857;
+      color: #ecfdf5;
+    }
+
+    .modal-footer .btn-primary-reset:hover {
+      background: linear-gradient(180deg, #34d399, #10b981);
+      color: #fff;
     }
 
     .small-btn.active {
@@ -1000,28 +1072,112 @@
         grid-template-columns: 1fr 280px;
       }
     }
+
+    /* Landing: solo columna central (diagrama + barra de pasos) */
+    .landing-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse 120% 80% at 50% 20%, #1e293b 0%, rgba(15, 23, 42, 0.97) 55%);
+      border-radius: 12px;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .landing-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .landing-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 32px 28px;
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .landing-title {
+      margin: 0 0 8px 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #dbeafe;
+      letter-spacing: -0.02em;
+    }
+
+    .landing-lead {
+      margin: 0 0 28px 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .landing-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .landing-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+    }
+
+    .landing-btn-primary {
+      background: linear-gradient(180deg, #10b981, #059669);
+      border-color: #047857;
+      color: #ecfdf5;
+    }
+
+    .landing-btn-primary:hover {
+      background: linear-gradient(180deg, #34d399, #10b981);
+      color: #fff;
+    }
   </style>
 </head>
 
 <body>
   <div class="app">
     <div class="top-bar">
-      <span class="title">Diagrama de Actores 2.0 — Simulador de Eventos</span>
+      <div class="top-bar-brand">
+        <span class="title">Diagrama</span>
+      </div>
+      <div class="top-bar-actions">
+        <label class="btn file-label">📤 Subir Excel
+          <input id="fileInput" type="file" accept=".xlsx,.xls" />
+        </label>
+        <button id="exportBtn" class="btn export-btn">⬇ Mi Excel</button>
+        <button id="helpBtn" class="btn ghost" title="Ayuda / Modelo de Datos">❓ Ayuda</button>
+        <button id="clearBtn" class="btn ghost">Limpiar</button>
+        <button id="resetStorageBtn" type="button" class="btn ghost" title="Borrar datos guardados en el navegador y recargar">Resetear</button>
+      </div>
     </div>
 
     <div class="layout">
       <div class="center-wrap">
-        <section class="panel svg-wrap">
-          <div class="center-toolbar">
-            <span id="warningBox" class="warning"></span>
-            <label class="btn file-label">📤 Subir Excel
-              <input id="fileInput" type="file" accept=".xlsx,.xls" />
-            </label>
-            <button id="exportBtn" class="btn export-btn">⬇ Mi Excel</button>
-            <button id="helpBtn" class="btn ghost" title="Ayuda / Modelo de Datos">❓ Ayuda</button>
-            <button id="clearBtn" class="btn ghost">Limpiar</button>
+        <div id="landingOverlay" class="landing-overlay hidden" aria-hidden="true">
+          <div class="landing-card">
+            <h1 class="landing-title">Diagrama</h1>
+            <p class="landing-lead">Elige cómo quieres empezar</p>
+            <div class="landing-actions">
+              <button type="button" id="landingHowBtn" class="btn ghost landing-btn">Cómo funciona</button>
+              <button type="button" id="landingDemoBtn" class="btn landing-btn landing-btn-primary">Cargar modo demo</button>
+              <button type="button" id="landingFileBtn" class="btn landing-btn">Cargar mi propio archivo</button>
+            </div>
           </div>
+        </div>
+        <section class="panel svg-wrap">
           <div id="stepDescTop" class="step-desc-top" aria-live="polite">
+            <div id="stepPauseToast" class="step-pause-toast" hidden role="status">En pausa</div>
             <div id="stepDescTopTextWrap" class="step-desc-text">
               <p id="stepDescTopText"></p>
             </div>
@@ -1046,7 +1202,7 @@
                 <path d="M0,0 L10,4 L0,8 z" fill="#22d3ee"></path>
               </marker>
               <marker id="arrow-route-vuelta" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
-                <path d="M0,0 L10,4 L0,8 z" fill="#fbbf24"></path>
+                <path d="M0,0 L10,4 L0,8 z" fill="#22d3ee"></path>
               </marker>
             </defs>
 
@@ -1099,11 +1255,9 @@
         </section>
         <div class="step-bar">
           <div class="step-bar-controls">
-            <button id="stepBarPause" class="btn ghost" disabled>⏸ Pausa</button>
+            <button type="button" id="stepBarPlay" class="btn step-bar-play-btn" disabled>▶ Play</button>
             <button id="stepBarBack" class="btn ghost" disabled>⏪ Retroceder</button>
             <button id="stepBarNext" class="btn ghost" disabled>⏩ Avanzar</button>
-            <button id="stepBarPlay" class="btn" disabled
-              style="background: linear-gradient(180deg, #10b981, #059669); border-color:#047857;">▶ Play</button>
             <div class="step-bar-delay" title="Ritmo: segundos por paso en modo Play">
               <button type="button" id="delayMinus" class="delay-btn" aria-label="Más lento">−</button>
               <span id="delayValue">Ritmo</span>
@@ -1120,9 +1274,9 @@
       </div>
 
       <section class="panel">
-        <h3>Eventos</h3>
+        <h3>Procesos</h3>
         <div id="eventList" class="panel-body"></div>
-        <div class="steps-title">Pasos del evento</div>
+        <div class="steps-title">Pasos del Proceso</div>
         <div id="stepsPanel" class="panel-body"></div>
       </section>
     </div>
@@ -1139,7 +1293,7 @@
         <button id="closeHelpBtn" class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Herramienta genérica para diagramar actores y simular flujos (eventos) que recorren el grafo. Sirve para
+        <p>Herramienta genérica para diagramar actores y simular flujos (procesos) que recorren el grafo. Sirve para
           procesos, integraciones, casos de uso o cualquier secuencia paso a paso.</p>
 
         <h3>Cómo funciona</h3>
@@ -1150,18 +1304,18 @@
           <li><strong>Persistencia:</strong> Posiciones y datos se guardan en el navegador al recargar.</li>
           <li><strong>Barra superior:</strong> <em>Subir Excel</em>, <em>Mi Excel</em>, <em>Ayuda</em> y <em>Limpiar</em>. A la derecha del todo en la barra inferior: <em>Ajustar conexiones</em>, <em>Grid</em>, <em>Demo</em>, <em>Excel Demo</em>.
           </li>
-          <li><strong>Eventos:</strong> Elige un evento en el panel derecho. <em>Seleccionar</em> para ver pasos; <em>▶
-              Ejecutar</em> inicia la simulación. En la barra inferior: <em>Play</em> para continuar, <em>Pausa</em>,
-            <em>Retroceder</em>, <em>Avanzar</em>. El control <strong>Ritmo</strong> (− / +) ajusta los segundos por
+          <li><strong>Procesos:</strong> Elige un proceso en el panel derecho. <em>Seleccionar</em> para ver pasos; <em>▶
+              Ejecutar</em> inicia la simulación. En la barra inferior: el mismo botón alterna <em>Play</em> (inicio o continuar) y
+            <em>Pausa</em> mientras corre; luego <em>Retroceder</em>, <em>Avanzar</em> y <strong>Ritmo</strong> (− / +) para los segundos por
             paso. La <strong>descripción larga</strong> del paso se muestra en la franja arriba del diagrama; debajo,
             los indicadores de cuenta atrás. La lista de pasos usa la descripción corta.
           </li>
           <li><strong>Modo Demo / Excel Demo:</strong> En la barra inferior derecha, <em>Demo</em> carga el ejemplo en
             memoria (y lo guarda). <em>Excel Demo</em> descarga la plantilla (.xlsx) con la misma estructura.</li>
-          <li><strong>Mi Excel:</strong> Exporta el estado actual a un .xlsx: posiciones de nodos (x, y), conexiones y
-            eventos con los punteros (in_port, out_port) que hayas ajustado. Si subes un Excel, mueves nodos o editas
+          <li><strong>Mi Excel:</strong> Exporta el estado actual a un .xlsx: posiciones de nodos (x, y), conexiones,
+            procesos y pasos con los punteros (in_port, out_port) que hayas ajustado. Si subes un Excel, mueves nodos o editas
             punteros con «Ajustar conexiones», al descargar <em>Mi Excel</em> todo queda actualizado.</li>
-          <li><strong>✎ Ajustar conexiones:</strong> Botón en la barra inferior. Activa el modo, selecciona un evento y
+          <li><strong>✎ Ajustar conexiones:</strong> Botón en la barra inferior. Activa el modo, selecciona un proceso y
             expande un paso para elegir la conexión (puerto) a editar.</li>
         </ul>
 
@@ -1214,6 +1368,23 @@
     </div>
   </div>
 
+  <!-- Modal confirmar restablecer localStorage -->
+  <div id="resetConfirmModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="resetConfirmTitle">
+    <div class="modal-content modal-dialog">
+      <div class="modal-header">
+        <h2 id="resetConfirmTitle">Restablecer datos</h2>
+        <button type="button" id="closeResetModalBtn" class="modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Se borrarán los datos guardados en este navegador (diagrama, posiciones y procesos). La página se recargará y volverás al inicio vacío.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="cancelResetBtn" class="btn ghost">Cancelar</button>
+        <button type="button" id="confirmResetBtn" class="btn btn-primary-reset">Continuar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     const NODE_W = 210;
@@ -1234,67 +1405,56 @@
       countdownTimer: null,
       countdownSecond: 0,
       stepDelaySeconds: 4,
-      warnings: [],
       dragging: null
     };
 
+    /* Posiciones: rectángulo como en captura (~X 206/669; Y visual 478 arriba / 233 abajo → y SVG 128 / 373) */
     const DEMO = {
       actors: [
-        { id: 'CLIENT', label: 'Cliente', type: 'Entrada', x: 40, y: 380, visible: 1, description: 'Punto de entrada del usuario o sistema externo.' },
-        { id: 'CHANNEL_A', label: 'Canal A', type: 'Entrada', x: 40, y: 280, visible: 1, description: 'Otro canal de entrada (web, API, etc.).' },
-        { id: 'GATEWAY', label: 'API Gateway', type: 'Gateway', x: 280, y: 330, visible: 1, description: 'Enruta y valida las peticiones entrantes.' },
-        { id: 'SVC_ORCH', label: 'Orquestador', type: 'Servicio', x: 520, y: 380, visible: 1, description: 'Coordina la secuencia de llamadas a otros servicios.' },
-        { id: 'SVC_A', label: 'Servicio A', type: 'Servicio', x: 520, y: 240, visible: 1, description: 'Lógica de negocio o integración específica.' },
-        { id: 'SVC_B', label: 'Servicio B', type: 'Servicio', x: 520, y: 120, visible: 1, description: 'Segundo servicio (validación, reglas, etc.).' },
-        { id: 'DB', label: 'Base de datos', type: 'Datos', x: 760, y: 240, visible: 1, description: 'Persistencia y consulta de datos.' },
-        { id: 'CACHE', label: 'Caché', type: 'Datos', x: 760, y: 120, visible: 1, description: 'Almacenamiento en caché para respuestas rápidas.' }
+        { id: 'NUBE', label: 'Nube', type: 'Atmósfera', x: 206, y: 128, visible: 1, description: 'Vapor de agua enfriado; condensación en el cielo.' },
+        { id: 'LLUVIA', label: 'Lluvia', type: 'Precipitación', x: 669, y: 128, visible: 1, description: 'Agua que cae por gravedad desde las nubes.' },
+        { id: 'MAR', label: 'Mar', type: 'Agua', x: 206, y: 373, visible: 1, description: 'Océanos y mares: gran reserva de agua salada.' },
+        { id: 'RIO', label: 'Río', type: 'Agua dulce', x: 669, y: 373, visible: 1, description: 'Corriente que lleva el agua hacia el mar.' }
       ],
       edges: [
-        { from: 'CLIENT', to: 'GATEWAY' },
-        { from: 'CHANNEL_A', to: 'GATEWAY' },
-        { from: 'GATEWAY', to: 'SVC_ORCH' },
-        { from: 'SVC_ORCH', to: 'SVC_A' },
-        { from: 'SVC_ORCH', to: 'SVC_B' },
-        { from: 'SVC_A', to: 'DB' },
-        { from: 'SVC_A', to: 'CACHE' },
-        { from: 'SVC_B', to: 'DB' }
+        { from: 'NUBE', to: 'LLUVIA', out_port: 'R', in_port: 'L' },
+        { from: 'LLUVIA', to: 'RIO', out_port: 'DL', in_port: 'UR' },
+        { from: 'RIO', to: 'MAR', out_port: 'L', in_port: 'R' },
+        { from: 'MAR', to: 'NUBE', out_port: 'UL', in_port: 'DR' }
       ],
       procesos: [
-        { id: 'P-001', nombre: 'Flujo principal', descripcion: 'Recorrido estándar con ida y vuelta.' },
-        { id: 'P-002', nombre: 'Flujo con validación', descripcion: 'Incluye paso alternativo por Servicio B.' },
-        { id: 'P-003', nombre: 'Consulta simple', descripcion: 'Respuesta directa desde caché.' }
+        { id: 'P-AGUA', nombre: 'Ciclo del agua', descripcion: 'Evaporación, lluvia y vuelta al mar.' }
       ],
       pasos: [
-        // P-001 - Flujo principal
-        { proceso_id: 'P-001', seq: 1, from_node: 'CLIENT', action: 'Envía petición', out_port: 'R', to_node: 'GATEWAY', in_port: 'L' },
-        { proceso_id: 'P-001', seq: 2, from_node: 'GATEWAY', action: 'Valida y enruta', out_port: 'R', to_node: 'SVC_ORCH', in_port: 'UL' },
-        { proceso_id: 'P-001', seq: 3, from_node: 'SVC_ORCH', action: 'Llama a Servicio A', out_port: 'R', to_node: 'SVC_A', in_port: 'L' },
-        { proceso_id: 'P-001', seq: 4, from_node: 'SVC_A', action: 'Consulta BD', out_port: 'UR', to_node: 'DB', in_port: 'DL' },
-        { proceso_id: 'P-001', seq: 5, from_node: 'DB', action: 'Retorna datos', out_port: 'DR', to_node: 'SVC_A', in_port: 'DR' },
-        { proceso_id: 'P-001', seq: 6, from_node: 'SVC_A', action: 'Responde al orquestador', out_port: 'DL', to_node: 'SVC_ORCH', in_port: 'R' },
-        { proceso_id: 'P-001', seq: 7, from_node: 'SVC_ORCH', action: 'Respuesta final', out_port: 'L', to_node: 'CLIENT', in_port: 'DR' },
-
-        // P-002 - Flujo con validación
-        { proceso_id: 'P-002', seq: 1, from_node: 'CHANNEL_A', action: 'Entrada por Canal A', out_port: 'R', to_node: 'GATEWAY', in_port: 'L' },
-        { proceso_id: 'P-002', seq: 2, from_node: 'GATEWAY', action: 'Enruta a orquestador', out_port: 'DR', to_node: 'SVC_ORCH', in_port: 'UR' },
-        { proceso_id: 'P-002', seq: 3, from_node: 'SVC_ORCH', action: 'Pide validación', out_port: 'DR', to_node: 'SVC_B', in_port: 'UL' },
-        { proceso_id: 'P-002', seq: 4, from_node: 'SVC_B', action: 'Validación con advertencia', out_port: 'R', to_node: 'DB', in_port: 'L' },
-
-        // P-003 - Consulta simple
-        { proceso_id: 'P-003', seq: 1, from_node: 'CLIENT', action: 'Consulta caché', out_port: 'DR', to_node: 'SVC_A', in_port: 'UL' },
-        { proceso_id: 'P-003', seq: 2, from_node: 'SVC_A', action: 'Hit y respuesta', out_port: 'R', to_node: 'CACHE', in_port: 'L' }
+        { proceso_id: 'P-AGUA', seq: 1, from_node: 'NUBE', action: 'Las gotas se juntan y caen', out_port: 'R', to_node: 'LLUVIA', in_port: 'L' },
+        { proceso_id: 'P-AGUA', seq: 2, from_node: 'LLUVIA', action: 'El agua escurre al suelo y al cauce', out_port: 'DL', to_node: 'RIO', in_port: 'UR' },
+        { proceso_id: 'P-AGUA', seq: 3, from_node: 'RIO', action: 'El río desemboca en el mar', out_port: 'L', to_node: 'MAR', in_port: 'R' },
+        { proceso_id: 'P-AGUA', seq: 4, from_node: 'MAR', action: 'El sol calienta el agua; sube el vapor', out_port: 'UL', to_node: 'NUBE', in_port: 'DR' }
       ]
     };
 
     const $ = sel => document.querySelector(sel);
     const eventList = $('#eventList');
     const stepsPanel = $('#stepsPanel');
-    const warningBox = $('#warningBox');
     const svg = $('#diagram');
     const nodesLayer = $('#nodesLayer');
     const edgesLayer = $('#edgesLayer');
     const routeLayer = $('#routeLayer');
     const portEditLayer = $('#portEditLayer');
+
+    function showLanding() {
+      const el = $('#landingOverlay');
+      if (!el) return;
+      el.classList.remove('hidden');
+      el.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideLanding() {
+      const el = $('#landingOverlay');
+      if (!el) return;
+      el.classList.add('hidden');
+      el.setAttribute('aria-hidden', 'true');
+    }
 
     // Estado del modo edición de puertos
     let portEditMode = false;
@@ -1328,11 +1488,9 @@
       eventList.innerHTML = '';
       clearStepsPanel();
 
-      state.warnings = [];
       const getRows = name => {
         const ws = workbook.Sheets[name];
         if (!ws) {
-          state.warnings.push(`Falta hoja ${name}.`);
           return [];
         }
         return XLSX.utils.sheet_to_json(ws, { defval: '' });
@@ -1365,9 +1523,14 @@
         const from = normId(r.from);
         const to = normId(r.to);
         if (!from || !to) return null;
-        return {
-          from, to
-        };
+        const outP = normId(r.puerta_salida || r.out_port || '');
+        const inP = normId(r.puerta_destino || r.in_port || '');
+        const edge = { from, to };
+        if (outP && inP) {
+          edge.out_port = outP;
+          edge.in_port = inP;
+        }
+        return edge;
       });
 
       state.procesos = normalize(procRaw, r => {
@@ -1403,13 +1566,13 @@
       state.selectedTxId = null;
       state.stepIndex = -1;
       stopRun();
-      warningBox.textContent = state.warnings.join(' ');
       renderEvents();
       clearStepsPanel();
       drawAll();
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
+      hideLanding();
     }
 
     function actorMap() {
@@ -1433,6 +1596,14 @@
         // Por defecto o si no está definido el puerto, apuntamos al centro geométrico del actor
         default: return { x: ax + w * 0.5, y: ay + h * 0.5 };
       }
+    }
+
+    /** Trayectoria curva entre dos puntos (misma lógica que la ruta animada). */
+    function connectorPathD(p1, p2) {
+      if (Math.abs(p1.y - p2.y) < 10) {
+        return `M ${p1.x},${p1.y} C ${(p1.x + p2.x) / 2},${p1.y} ${(p1.x + p2.x) / 2},${p2.y} ${p2.x},${p2.y}`;
+      }
+      return `M ${p1.x},${p1.y} C ${p1.x},${(p1.y + p2.y) / 2} ${p2.x},${(p1.y + p2.y) / 2} ${p2.x},${p2.y}`;
     }
 
     function drawAll() {
@@ -1659,6 +1830,9 @@
 
     function drawEdges() {
       edgesLayer.innerHTML = '';
+      // Con paso activo (Play, pausa, avanzar/retroceder) solo la ruta por puertos; no el grafo base.
+      if (state.runTimer || state.stepIndex >= 0) return;
+
       const amap = actorMap();
 
       for (const edge of state.edges) {
@@ -1667,15 +1841,33 @@
         if (!from || !to) continue;
         if (!from.visible || !to.visible) continue;
 
-        // Líneas estáticas: simples de centro a centro, solo muestran existencia de conexión
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('class', 'edge');
-        line.setAttribute('x1', from.x + NODE_W / 2);
-        line.setAttribute('y1', from.y + NODE_H / 2);
-        line.setAttribute('x2', to.x + NODE_W / 2);
-        line.setAttribute('y2', to.y + NODE_H / 2);
-        line.setAttribute('marker-end', 'url(#arrow)');
-        edgesLayer.appendChild(line);
+        let x1 = from.x + NODE_W / 2;
+        let y1 = from.y + NODE_H / 2;
+        let x2 = to.x + NODE_W / 2;
+        let y2 = to.y + NODE_H / 2;
+        if (edge.out_port && edge.in_port) {
+          const p1 = getConnectorPoint(from, edge.out_port);
+          const p2 = getConnectorPoint(to, edge.in_port);
+          x1 = p1.x; y1 = p1.y; x2 = p2.x; y2 = p2.y;
+        }
+
+        if (edge.out_port && edge.in_port) {
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('class', 'edge');
+          path.setAttribute('d', connectorPathD({ x: x1, y: y1 }, { x: x2, y: y2 }));
+          path.setAttribute('fill', 'none');
+          path.setAttribute('marker-end', 'url(#arrow)');
+          edgesLayer.appendChild(path);
+        } else {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('class', 'edge');
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+          line.setAttribute('marker-end', 'url(#arrow)');
+          edgesLayer.appendChild(line);
+        }
       }
     }
 
@@ -1683,9 +1875,17 @@
       routeLayer.innerHTML = '';
       if (!state.selectedTxId) return;
 
-      const amap = actorMap();
       const steps = getEventSteps(state.selectedTxId);
       if (!steps.length) return;
+
+      // En reposo (sin Play ni paso activo) solo el grafo estático: evita duplicar líneas con las aristas.
+      const showRouteOverlay =
+        !!state.runTimer ||
+        state.stepIndex >= 0 ||
+        (portEditMode && state.portConnectionIdx >= 0);
+      if (!showRouteOverlay) return;
+
+      const amap = actorMap();
 
       // Dibuja una flecha curvada por cada paso (origen a destino directo)
       for (let i = 0; i < steps.length; i++) {
@@ -1699,30 +1899,18 @@
         const p2 = getConnectorPoint(actorTo, step.in_port);
 
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        let d = '';
-        if (Math.abs(p1.y - p2.y) < 10) {
-          d = `M ${p1.x},${p1.y} C ${(p1.x + p2.x) / 2},${p1.y} ${(p1.x + p2.x) / 2},${p2.y} ${p2.x},${p2.y}`;
-        } else {
-          d = `M ${p1.x},${p1.y} C ${p1.x},${(p1.y + p2.y) / 2} ${p2.x},${(p1.y + p2.y) / 2} ${p2.x},${p2.y}`;
-        }
-        path.setAttribute('d', d);
+        path.setAttribute('d', connectorPathD(p1, p2));
         path.setAttribute('fill', 'none');
 
         const isActiveAnim = (state.stepIndex === i);
-        const isBack = p2.x < p1.x;
-        const markerClass = isBack ? 'url(#arrow-route-vuelta)' : 'url(#arrow-route-ida)';
+        const markerClass = 'url(#arrow-route-ida)';
 
         let strokeColor = '#64748b'; // gris pasos futuros/no anim
         let cssClass = 'route';
 
         if (isActiveAnim) {
-          strokeColor = '#22d3ee'; // cian en vuelo
-          if (!portEditMode && state.runTimer) {
-            cssClass = 'route-path ida';
-          } else {
-            cssClass = 'route-path vuelta';
-            strokeColor = '#fbbf24'; // resaltar ambar estático en selección/pausa
-          }
+          strokeColor = '#22d3ee';
+          cssClass = 'route-path ida';
         } else if (i < state.stepIndex) {
           strokeColor = '#a8a29e'; // rastro gris mate pasos pasados
         }
@@ -1775,11 +1963,11 @@
       return state.pasos.filter(p => p.proceso_id === eventId);
     }
 
-    function renderSteps(txId, activeIndex = -1) {
+    function renderSteps(txId, activeIndex = -1, opts = {}) {
       stepsPanel.innerHTML = '';
       const steps = getEventSteps(txId);
       if (!steps.length) {
-        stepsPanel.innerHTML = '<div class="muted">Sin pasos para este evento.</div>';
+        stepsPanel.innerHTML = '<div class="muted">Sin pasos para este proceso.</div>';
         updateStepBar(null);
         drawNodes();
         return;
@@ -1839,15 +2027,15 @@
       if (activeIndex >= 0 && activeIndex < steps.length) {
         updateStepBar(steps[activeIndex]);
       } else {
-        updateStepBar(null);
+        updateStepBar(null, { immediate: !!opts.clearDescImmediate });
       }
       drawNodes();
     }
 
-    function updateStepBar(stepData) {
+    function updateStepBar(stepData, opts = {}) {
+      const immediate = opts.immediate === true;
       const textWrap = $('#stepDescTopTextWrap');
       const topText = $('#stepDescTopText');
-      const btnPause = $('#stepBarPause');
       const btnBack = $('#stepBarBack');
       const btnNext = $('#stepBarNext');
       const btnPlay = $('#stepBarPlay');
@@ -1861,32 +2049,63 @@
       if (stepData) {
         const text = (stepData.action && stepData.action.trim()) ? stepData.action : `Transacción hacia ${stepData.to_node}`;
         const topLabel = `<span style="font-weight: 600; color:var(--text); margin-right:6px;">Paso ${stepData.seq}: ${stepData.from_node} ➔ ${stepData.to_node}</span> <span style="color:var(--muted); font-weight: normal;"> - ${text}</span>`;
-        textWrap.classList.remove('visible');
-        textWrap.classList.add('exit');
-        clearTimeout(updateStepBar._exitTimer);
-        updateStepBar._exitTimer = setTimeout(() => {
+        if (immediate) {
+          clearTimeout(updateStepBar._exitTimer);
           topText.innerHTML = topLabel;
           textWrap.classList.remove('exit');
           textWrap.classList.add('visible');
-        }, 220);
+        } else {
+          textWrap.classList.remove('visible');
+          textWrap.classList.add('exit');
+          clearTimeout(updateStepBar._exitTimer);
+          updateStepBar._exitTimer = setTimeout(() => {
+            topText.innerHTML = topLabel;
+            textWrap.classList.remove('exit');
+            textWrap.classList.add('visible');
+          }, 220);
+        }
       } else {
-        textWrap.classList.remove('visible');
-        textWrap.classList.add('exit');
         clearTimeout(updateStepBar._exitTimer);
-        updateStepBar._exitTimer = setTimeout(() => {
+        if (immediate) {
           topText.textContent = '';
-          textWrap.classList.remove('exit');
-        }, 220);
+          topText.innerHTML = '';
+          textWrap.classList.remove('visible', 'exit');
+        } else {
+          textWrap.classList.remove('visible');
+          textWrap.classList.add('exit');
+          updateStepBar._exitTimer = setTimeout(() => {
+            topText.textContent = '';
+            textWrap.classList.remove('exit');
+          }, 220);
+        }
       }
 
-      btnPause.disabled = !isRunning;
       btnBack.disabled = !hasSteps || state.stepIndex < 0;
       btnNext.disabled = !hasSteps || state.stepIndex >= steps.length - 1;
       btnPlay.disabled = !hasSteps;
+
+      const isPaused = hasSteps && state.stepIndex >= 0 && !isRunning;
+      const pauseToast = $('#stepPauseToast');
+      if (pauseToast) pauseToast.hidden = !isPaused;
+      if (btnPlay) {
+        btnPlay.classList.remove('step-bar-play--running', 'step-bar-play--resume');
+        if (isRunning) {
+          btnPlay.textContent = '⏸ Pausa';
+          btnPlay.setAttribute('aria-label', 'Pausar simulación');
+          btnPlay.classList.add('step-bar-play--running');
+        } else if (isPaused) {
+          btnPlay.textContent = '▶ Play';
+          btnPlay.setAttribute('aria-label', 'Continuar simulación');
+          btnPlay.classList.add('step-bar-play--resume');
+        } else {
+          btnPlay.textContent = '▶ Play';
+          btnPlay.setAttribute('aria-label', 'Iniciar simulación desde el primer paso');
+        }
+      }
     }
 
     function clearStepsPanel() {
-      stepsPanel.innerHTML = '<div class="muted">Selecciona un evento para ver pasos.</div>';
+      stepsPanel.innerHTML = '<div class="muted">Selecciona un proceso para ver pasos.</div>';
       updateStepBar(null);
     }
 
@@ -1910,6 +2129,7 @@
       }
       // Eliminamos countdownTimer por completo
       renderCountdownSquares();
+      drawEdges();
     }
 
     function renderCountdownSquares() {
@@ -1928,29 +2148,33 @@
       el.style.display = state.runTimer && state.stepIndex >= 0 ? 'flex' : 'none';
     }
 
-    function runTx(txId = state.selectedTxId) {
+    function runTx(txId = state.selectedTxId, opts = {}) {
+      const resume = opts.resume === true;
       if (!txId) return;
-      if (state.selectedTxId !== txId) selectTx(txId);
+      if (!resume) {
+        if (state.selectedTxId !== txId) selectTx(txId);
+      } else if (state.selectedTxId !== txId) {
+        return;
+      }
 
       stopRun();
       const steps = getEventSteps(txId);
-      drawRoute();
 
       if (!steps.length) {
         state.stepIndex = -1;
         renderSteps(txId, -1);
+        drawEdges();
         return;
       }
 
-      state.stepIndex = 0;
+      if (!resume) {
+        state.stepIndex = 0;
+      } else if (state.stepIndex < 0 || state.stepIndex >= steps.length) {
+        state.stepIndex = 0;
+      }
       state.countdownSecond = 0;
 
-      renderSteps(txId, 0);
-      updateStepBar();
-      drawNodes();
-      renderCountdownSquares();
-
-      // Un solo timer central (reloj maestro de 1 segundo)
+      // Reloj antes de renderSteps (éste llama a updateStepBar: si no, stepIndex>=0 y !runTimer parece pausa).
       state.runTimer = setInterval(() => {
         state.countdownSecond++;
 
@@ -1960,21 +2184,32 @@
 
           if (state.stepIndex >= steps.length) {
             stopRun();
-            state.stepIndex = steps.length - 1;
-            updateStepBar();
-            drawNodes();
+            state.stepIndex = -1;
+            state.countdownSecond = 0;
+            renderSteps(txId, -1, { clearDescImmediate: true });
+            drawRoute();
+            drawPortDots();
+            renderCountdownSquares();
+            drawEdges();
             return;
           }
 
           state.countdownSecond = 0;
           renderSteps(txId, state.stepIndex);
           updateStepBar();
+          drawRoute();
           drawNodes();
         }
 
         // Actualizamos cuadritos cada segundo independiente de si cambió de paso
         renderCountdownSquares();
       }, 1000);
+
+      renderSteps(txId, state.stepIndex);
+      drawNodes();
+      renderCountdownSquares();
+      drawEdges();
+      drawRoute();
     }
 
     function stepTx() {
@@ -1992,6 +2227,7 @@
       renderSteps(state.selectedTxId, state.stepIndex);
       drawRoute();
       drawPortDots();
+      drawEdges();
     }
 
     function stepBack() {
@@ -2009,6 +2245,7 @@
       renderSteps(state.selectedTxId, state.stepIndex);
       drawRoute();
       drawPortDots();
+      drawEdges();
     }
 
     function clearSelection() {
@@ -2019,6 +2256,7 @@
       clearStepsPanel();
       drawRoute();
       drawNodes();
+      drawEdges();
     }
 
     function applyDemo() {
@@ -2037,7 +2275,6 @@
         state.pasos = [];
       }
 
-      warningBox.textContent = '';
       renderActors();
       renderEvents();
       clearStepsPanel();
@@ -2045,6 +2282,7 @@
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = 'Demo Activo'; loadDemoEl.classList.add('port-edit-active'); }
+      hideLanding();
     }
 
     function emptyState() {
@@ -2054,7 +2292,6 @@
       state.selectedTxId = null;
       state.stepIndex = -1;
       stopRun();
-      warningBox.textContent = 'Aplicación vacía. Sube un Excel (Subir Excel) o usa Modo Demo.';
       renderActors();
       renderEvents();
       clearStepsPanel();
@@ -2062,12 +2299,18 @@
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
+      showLanding();
     }
 
     // Descarga la plantilla Excel Demo (mismo contenido que Modo Demo)
     function downloadDemo() {
       try {
-        const demoEdges = DEMO.edges.map(e => ({ from: e.from, to: e.to }));
+        const demoEdges = DEMO.edges.map(e => {
+          const row = { from: e.from, to: e.to };
+          if (e.out_port) row.puerta_salida = e.out_port;
+          if (e.in_port) row.puerta_destino = e.in_port;
+          return row;
+        });
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.actors), 'Nodos');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(demoEdges), 'Conexiones');
@@ -2098,10 +2341,12 @@
           description: a.description || ''
         }));
 
-        const edgeRows = state.edges.map(e => ({
-          from: e.from,
-          to: e.to
-        }));
+        const edgeRows = state.edges.map(e => {
+          const row = { from: e.from, to: e.to };
+          if (e.out_port) row.puerta_salida = e.out_port;
+          if (e.in_port) row.puerta_destino = e.in_port;
+          return row;
+        });
 
         const procRows = state.procesos.map(p => ({
           id: p.id,
@@ -2133,8 +2378,6 @@
         const mn = String(now.getMinutes()).padStart(2, '0');
         const filename = `${yyyy}${mm}${dd}${hh}${mn}_Diagrama.xlsx`;
         XLSX.writeFile(wb, filename);
-        warningBox.textContent = `✓ Descargado: ${filename}`;
-        setTimeout(() => { warningBox.textContent = ''; }, 4000);
       } catch (err) {
         console.error('Error exportando estado', err);
         alert('No se pudo exportar. Revisa consola.');
@@ -2167,11 +2410,14 @@
           loadWorkbook(wb);
         } catch (err) {
           console.error('Error leyendo XLSX', err);
-          warningBox.textContent = 'No se pudo cargar el Excel.';
         }
         // Resetea el input para permitir volver a cargar el mismo archivo tras ser modificado
         ev.target.value = '';
       });
+
+      $('#landingHowBtn').addEventListener('click', () => $('#helpModal').classList.add('active'));
+      $('#landingDemoBtn').addEventListener('click', () => applyDemo());
+      $('#landingFileBtn').addEventListener('click', () => $('#fileInput').click());
 
       $('#helpBtn').addEventListener('click', () => $('#helpModal').classList.add('active'));
       $('#closeHelpBtn').addEventListener('click', () => $('#helpModal').classList.remove('active'));
@@ -2192,10 +2438,48 @@
       $('#downloadDemoBtn').addEventListener('click', downloadDemo);
       $('#clearBtn').addEventListener('click', clearSelection);
 
-      $('#stepBarPause').addEventListener('click', () => { stopRun(); updateStepBar(); drawNodes(); });
+      const resetConfirmModal = $('#resetConfirmModal');
+      function openResetConfirmModal() {
+        resetConfirmModal.classList.add('active');
+      }
+      function closeResetConfirmModal() {
+        resetConfirmModal.classList.remove('active');
+      }
+
+      $('#resetStorageBtn').addEventListener('click', openResetConfirmModal);
+      $('#closeResetModalBtn').addEventListener('click', closeResetConfirmModal);
+      $('#cancelResetBtn').addEventListener('click', closeResetConfirmModal);
+      resetConfirmModal.addEventListener('click', ev => {
+        if (ev.target === resetConfirmModal) closeResetConfirmModal();
+      });
+      $('#confirmResetBtn').addEventListener('click', () => {
+        closeResetConfirmModal();
+        localStorage.removeItem('diagramaActoresData');
+        location.hash = '';
+        location.reload();
+      });
+      document.addEventListener('keydown', ev => {
+        if (ev.key !== 'Escape') return;
+        if (!resetConfirmModal.classList.contains('active')) return;
+        closeResetConfirmModal();
+        ev.preventDefault();
+      });
+
       $('#stepBarBack').addEventListener('click', stepBack);
       $('#stepBarNext').addEventListener('click', stepTx);
-      $('#stepBarPlay').addEventListener('click', () => runTx(state.selectedTxId));
+      $('#stepBarPlay').addEventListener('click', () => {
+        if (state.runTimer) {
+          stopRun();
+          updateStepBar();
+          drawNodes();
+          return;
+        }
+        if (state.stepIndex >= 0 && state.selectedTxId) {
+          runTx(state.selectedTxId, { resume: true });
+          return;
+        }
+        runTx(state.selectedTxId);
+      });
 
       function refreshDelayDisplay() {
         const el = $('#delayValue');
@@ -2223,11 +2507,6 @@
         portEditMode = !portEditMode;
         portEditBtn.classList.toggle('port-edit-active', portEditMode);
         portEditBtn.textContent = portEditMode ? 'Editor Conexiones ON' : '✎ Ajustar conexiones';
-        if (portEditMode && !state.selectedTxId) {
-          warningBox.textContent = 'Selecciona un evento para activar los puntos de edición.';
-          setTimeout(() => { warningBox.textContent = ''; }, 3000);
-        }
-
         // Reset properties
         state.portStepExpandedIdx = -1;
         state.portConnectionIdx = -1;
@@ -2365,11 +2644,11 @@
         if (state.actors.length === 0 && state.procesos.length === 0) {
           emptyState();
         } else {
-          warningBox.textContent = '';
           renderActors();
           renderEvents();
           clearStepsPanel();
           drawAll();
+          hideLanding();
         }
       } catch (err) {
         console.error('Error parseando state guardado', err);
