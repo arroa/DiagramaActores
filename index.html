@@ -42,6 +42,7 @@
     .wrap {
       max-width: 52rem;
       margin: 0 auto;
+      overflow-x: hidden;
       padding: 2.5rem 1.25rem 4rem;
     }
 
@@ -228,6 +229,33 @@
     footer strong {
       color: #cbd5e1;
       font-weight: 600;
+    }
+
+    @media (max-height: 880px) {
+      .wrap {
+        padding: 1.25rem 1rem 2rem;
+      }
+
+      header {
+        margin-bottom: 1.5rem;
+      }
+
+      .brand-row {
+        margin-bottom: 1rem;
+      }
+
+      .cta {
+        margin-bottom: 2rem;
+      }
+
+      section {
+        margin-bottom: 1.5rem;
+      }
+
+      footer {
+        padding-top: 1rem;
+        padding-bottom: 0.5rem;
+      }
     }
   </style>
 </head>

@@ -29,18 +29,27 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+    }
+
     body {
       margin: 0;
+      height: 100%;
+      max-height: 100%;
+      overflow: hidden;
       font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
       background: radial-gradient(1200px 600px at 35% -10%, #1e293b 0%, var(--bg) 55%);
       color: var(--text);
-      min-height: 100vh;
     }
 
     .app {
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      height: 100%;
+      min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
       padding: 0;
     }
 
@@ -398,9 +407,12 @@
     .layout {
       display: grid;
       grid-template-columns: 1fr 340px;
+      grid-template-rows: minmax(0, 1fr);
+      align-items: stretch;
       gap: 10px;
       min-height: 0;
-      flex: 1;
+      flex: 1 1 auto;
+      overflow: hidden;
       padding: 10px;
     }
 
@@ -411,6 +423,13 @@
       min-height: 0;
       flex: 1;
       gap: 0;
+      overflow: hidden;
+    }
+
+    /* Panel derecho (Procesos): altura limitada al viewport, scroll interno */
+    .layout > section.panel {
+      min-height: 0;
+      overflow: hidden;
     }
 
     .center-wrap .panel.svg-wrap {
@@ -1454,6 +1473,29 @@
     @media (max-width: 1200px) {
       .layout {
         grid-template-columns: 1fr 280px;
+      }
+    }
+
+    /* Menos altura útil (p. ej. 1080p con barra del sistema / OBS): compactar chrome */
+    @media (max-height: 880px) {
+      .top-bar {
+        padding: 6px 10px;
+        gap: 8px 10px;
+      }
+
+      .layout {
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .step-bar {
+        padding: 8px 12px;
+      }
+
+      .step-desc-top {
+        font-size: 1.05rem;
+        padding: 8px 16px;
+        top: 8px;
       }
     }
 
