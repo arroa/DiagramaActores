@@ -37,6 +37,9 @@
       margin: 0;
       height: 100%;
       max-height: 100%;
+      /* Si falla la cadena de % (p. ej. Safari / viewport dinámico), el layout no queda en 0px de alto. */
+      min-height: 100vh;
+      min-height: 100dvh;
       overflow: hidden;
       font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
       background: radial-gradient(1200px 600px at 35% -10%, #1e293b 0%, var(--bg) 55%);
@@ -707,9 +710,15 @@
       flex-direction: column;
     }
 
-    svg {
+    /* Solo el lienzo del grafo: height:100% en flex anidado a veces calcula 0 en producción → lienzo invisible. */
+    svg#diagram {
+      display: block;
       width: 100%;
-      height: 100%;
+      height: auto;
+      aspect-ratio: 1100 / 620;
+      max-height: 100%;
+      flex: 1 1 auto;
+      min-height: 220px;
       background: linear-gradient(180deg, #0b1220, #0a101e);
       border: 1px solid #233046;
       border-radius: 10px;
