@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagrama — BeSharpX</title>
+  <meta name="description" content="Herramienta para diagramar actores, simular flujos y sincronizar con Excel. Sin servidor." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1120;
+      --bg2: #111827;
+      --line: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --accent-dim: rgba(34, 211, 238, 0.12);
+      --btn: #0ea5e9;
+      --btn-hover: #0284c7;
+      --card: rgba(30, 41, 59, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Outfit", system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 700px at 80% -20%, rgba(14, 165, 233, 0.15) 0%, transparent 55%),
+        radial-gradient(900px 500px at 10% 100%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .wrap {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.75rem;
+    }
+
+    .brand-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Sustituye por tu imagen: descomenta <img> y pon la ruta en src */
+    .brand-mark {
+      width: min(88px, 22vw);
+      height: auto;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .brand-mark--fallback {
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, var(--accent-dim), transparent);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-mark--fallback svg {
+      width: 34px;
+      height: 34px;
+      opacity: 0.95;
+    }
+
+    .brand-texts {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0.1rem;
+      text-align: left;
+    }
+
+    .brand-name {
+      font-size: clamp(1.25rem, 3vw, 1.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fbbf24;
+      line-height: 1.2;
+    }
+
+    .brand-author {
+      font-family: "Nunito", system-ui, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    h1 {
+      font-size: clamp(1.75rem, 4.5vw, 2.35rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.75rem;
+      line-height: 1.2;
+    }
+
+    .lead {
+      font-family: "Nunito", system-ui, sans-serif;
+      font-size: clamp(1.2rem, 2.8vw, 1.45rem);
+      font-weight: 500;
+      color: var(--muted);
+      max-width: 38rem;
+      margin: 0 auto;
+      font-style: normal;
+      line-height: 1.55;
+    }
+
+    .cta {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+
+    .cta a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.95rem 1.75rem;
+      background: linear-gradient(180deg, var(--btn), var(--btn-hover));
+      color: #f0f9ff;
+      font-weight: 600;
+      font-size: 1.05rem;
+      text-decoration: none;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 12px 32px rgba(14, 165, 233, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cta a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 16px 40px rgba(14, 165, 233, 0.35);
+    }
+
+    .cta a svg {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    section {
+      margin-bottom: 2.25rem;
+    }
+
+    section h2 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 1rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1.35rem 1.5rem;
+    }
+
+    .card p {
+      margin: 0 0 1rem;
+      color: #cbd5e1;
+      font-size: 0.98rem;
+    }
+
+    .card p:last-child {
+      margin-bottom: 0;
+    }
+
+    ul.purpose {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: #cbd5e1;
+    }
+
+    ul.purpose li {
+      margin-bottom: 0.65rem;
+    }
+
+    ul.purpose li:last-child {
+      margin-bottom: 0;
+    }
+
+    ol.steps {
+      margin: 0;
+      padding-left: 1.35rem;
+      color: #cbd5e1;
+    }
+
+    ol.steps li {
+      margin-bottom: 0.65rem;
+      padding-left: 0.25rem;
+    }
+
+    footer {
+      text-align: center;
+      padding-top: 2rem;
+      padding-bottom: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    footer strong {
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand-row">
+        <!--
+          Tu imagen de marca (recomendado ~200–400px de ancho, PNG/SVG/WebP):
+          <img class="brand-mark" src="assets/marca.png" alt="BeSharpX" width="72" height="72" />
+        -->
+        <div class="brand-mark" aria-hidden="true">
+          <div class="brand-mark--fallback">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="16" r="4" fill="#22d3ee" />
+              <circle cx="8" cy="16" r="4" stroke="#67e8f9" stroke-width="1" />
+              <circle cx="24" cy="10" r="3.5" fill="#38bdf8" />
+              <circle cx="24" cy="22" r="3.5" fill="#38bdf8" />
+              <path d="M12 16h6M18 18l6-3M18 14l6 3" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+        <div class="brand-texts">
+          <span class="brand-name">BeSharpX</span>
+          <span class="brand-author">Luis Carrasco</span>
+        </div>
+      </div>
+      <h1>Diagrama de actores y flujos</h1>
+      <p class="lead">Una herramienta en el navegador, portable y simple, para hablar sobre un proceso y recorrerlo paso a paso.
+        Lo mejor es que lo administras con un simple Excel.</p>
+    </header>
+
+    <div class="cta">
+      <a href="Diagrama%20Actores.html" aria-label="Abrir la aplicación Diagrama">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" opacity="0.35" />
+          <path d="M10.5 8.5L15 12l-4.5 3.5" />
+        </svg>
+        Abrir la aplicación
+      </a>
+    </div>
+
+    <section>
+      <h2>Para qué sirve</h2>
+      <div class="card">
+        <ul class="purpose">
+          <li>Representar <strong>procesos</strong> con actores (sistemas, personas, servicios) y cómo se comunican.</li>
+          <li><strong>Simular</strong> la secuencia de pasos para presentar o revisar un flujo.</li>
+          <li><strong>Intercambiar</strong> el modelo con Excel: tres hojas (Procesos, Nodos, Pasos), sin servidor.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Cómo funciona</h2>
+      <div class="card">
+        <p>Subes un Excel con la estructura acordada o cargas un ejemplo con demo. Eliges un proceso en el panel, organizas el lienzo y recorres los pasos con play / pausa. Exportas cuando quieras.</p>
+        <ol class="steps">
+          <li>Carga de datos (Excel o demo).</li>
+          <li>Selección y visualización del proceso en el diagrama.</li>
+          <li>Simulación y ajuste de conexiones si hace falta.</li>
+          <li>Exportación a <em>Mi Excel</em> para respaldar o compartir.</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>BeSharpX</strong> · Diagrama · Herramienta cliente en el navegador</p>
+    </footer>
+  </div>
+</body>
+
+</html>

@@ -5,6 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Diagrama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0f172a;
@@ -41,12 +44,12 @@
       padding: 0;
     }
 
+    /* Marca y acciones en columnas auto (solo su contenido); el título vive en 1fr y se centra en el hueco real */
     .top-bar {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px 16px;
-      flex-wrap: wrap;
+      gap: 10px 12px;
       background: rgba(17, 24, 39, .95);
       border-bottom: 1px solid var(--line);
       padding: 8px 12px;
@@ -56,9 +59,118 @@
     .top-bar-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex: 1 1 200px;
+      justify-content: flex-start;
+      gap: 14px;
       min-width: 0;
+      width: max-content;
+      max-width: 100%;
+      text-align: left;
+      justify-self: start;
+    }
+
+    .top-bar-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 0;
+      padding: 0 8px;
+    }
+
+    /* Misma marca que index.html, alineada a la izquierda en la top bar */
+    .top-bar-brand .brand-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.75rem 1rem;
+      margin: 0;
+      flex-wrap: wrap;
+    }
+
+    .top-bar-brand-logo-link {
+      display: block;
+      flex-shrink: 0;
+      text-decoration: none;
+      color: inherit;
+      border-radius: 14px;
+      outline-offset: 2px;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    .top-bar-brand-logo-link:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .top-bar-brand-logo-link:focus-visible {
+      outline: 2px solid var(--accent);
+    }
+
+    .top-bar-brand .brand-mark {
+      width: auto;
+      max-width: min(56px, 15vw);
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .top-bar-brand-logo-link img.brand-mark {
+      border-radius: 14px;
+      vertical-align: middle;
+    }
+
+    .top-bar-brand .brand-mark--fallback {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), transparent);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .top-bar-brand .brand-mark--fallback svg {
+      width: 26px;
+      height: 26px;
+      opacity: 0.95;
+    }
+
+    .top-bar-brand .brand-texts {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0.05rem;
+      text-align: left;
+    }
+
+    .top-bar-brand .brand-name {
+      font-family: "Outfit", system-ui, sans-serif;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fbbf24;
+      line-height: 1.2;
+    }
+
+    .top-bar-brand .brand-author {
+      font-family: "Nunito", system-ui, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .top-bar-center .title {
+      display: block;
+      font-family: "Outfit", system-ui, sans-serif;
+      font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--accent);
+      margin: 0;
+      text-align: center;
+      max-width: min(42rem, 100%);
     }
 
     .top-bar-actions {
@@ -67,6 +179,31 @@
       gap: 8px;
       flex-wrap: wrap;
       flex-shrink: 0;
+      justify-self: end;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 1100px) {
+      .top-bar {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+      }
+
+      .top-bar-brand {
+        justify-self: start;
+      }
+
+      .top-bar-center {
+        justify-self: center;
+        order: 2;
+        max-width: 100%;
+      }
+
+      .top-bar-actions {
+        justify-self: stretch;
+        order: 3;
+        justify-content: flex-start;
+      }
     }
 
     .hamburger-btn {
@@ -86,12 +223,6 @@
 
     .hamburger-btn:hover {
       background: #334155;
-    }
-
-    .top-bar .title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #dbeafe;
     }
 
     .drawer-overlay {
@@ -649,11 +780,7 @@
       user-select: none;
     }
 
-    .node[data-has-tooltip] {
-      cursor: help;
-    }
-
-    /* Botón ⓘ para abrir descripción del nodo */
+    /* Botón ⓘ: abre la descripción del nodo (sin cursor "?" en todo el rectángulo). */
     .node-info-btn {
       cursor: pointer;
       pointer-events: auto;
@@ -681,7 +808,6 @@
       pointer-events: none;
     }
 
-    /* Globo de descripción del nodo (clic en ⓘ) */
     #nodeGlobo {
       display: none;
       position: fixed;
@@ -875,6 +1001,174 @@
     .modal-footer .btn-primary-reset:hover {
       background: linear-gradient(180deg, #34d399, #10b981);
       color: #fff;
+    }
+
+    #downloadHtmlModal {
+      z-index: 1001;
+    }
+
+    #downloadHtmlModal .modal-body ul {
+      margin: 0.75rem 0 0;
+      padding-left: 1.25rem;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    #downloadHtmlModal .modal-body li {
+      margin-bottom: 0.5rem;
+    }
+
+    html[data-diagrama-standalone] .help-barra-extra {
+      display: none;
+    }
+
+    #excelErrorModal .modal-content {
+      max-width: 560px;
+      max-height: min(92vh, 640px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #excelErrorModal .modal-header h2 {
+      color: #fecaca;
+      font-size: 1.05rem;
+    }
+
+    /* Ayuda — mismo “ritmo” que Calendario: intro, pasos numerados, pie discreto */
+    #helpModal {
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(6px);
+    }
+
+    #helpModal .modal-content {
+      max-width: min(36rem, 94vw);
+      max-height: min(90vh, 720px);
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+    }
+
+    #helpModal .modal-header {
+      flex-shrink: 0;
+      margin: 0;
+      padding: 16px 48px 16px 16px;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+
+    #helpModal .modal-header h2 {
+      flex: 1;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #7dd3fc;
+      padding-right: 8px;
+    }
+
+    #helpModal .modal-close {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    #helpModal .modal-close:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    #helpModal .modal-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 16px 20px 24px;
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    #helpModal .help-lead {
+      text-align: center;
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin: 0 0 1.25rem;
+      line-height: 1.55;
+    }
+
+    #helpModal .help-section-title {
+      margin: 1.25rem 0 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    #helpModal .help-section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    #helpModal ol.help-steps {
+      margin: 0;
+      padding-left: 1.35rem;
+      list-style: decimal;
+    }
+
+    #helpModal ol.help-steps li {
+      margin-bottom: 0.65rem;
+      color: #cbd5e1;
+    }
+
+    #helpModal ol.help-steps li strong {
+      color: #f1f5f9;
+    }
+
+    #helpModal .help-footnote {
+      margin-top: 1.25rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    #excelErrorModal .modal-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .excel-error-intro {
+      color: var(--muted);
+      margin: 0 0 4px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .excel-error-list {
+      margin: 10px 0 0;
+      padding-left: 1.2rem;
+      max-height: min(50vh, 380px);
+      overflow: auto;
+      flex: 1;
+    }
+
+    .excel-error-list li {
+      margin: 8px 0;
+      color: #fecdd3;
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .excel-error-list li.excel-error-more {
+      color: var(--muted);
+      font-style: italic;
+      list-style: none;
+      margin-left: -1rem;
     }
 
     .small-btn.active {
@@ -1239,7 +1533,34 @@
   <div class="app">
     <div class="top-bar">
       <div class="top-bar-brand">
-        <span class="title">Diagrama</span>
+        <div class="brand-row">
+          <!--
+            Tu imagen de marca (opcional): mismo enlace al inicio
+            <a href="index.html" class="top-bar-brand-logo-link" title="Volver al inicio" aria-label="Volver al inicio">
+              <img class="brand-mark" src="assets/marca.png" alt="BeSharpX" width="48" height="48" />
+            </a>
+          -->
+          <a href="index.html" class="top-bar-brand-logo-link" title="Volver al inicio" aria-label="Volver al inicio">
+            <div class="brand-mark" aria-hidden="true">
+              <div class="brand-mark--fallback">
+                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="8" cy="16" r="4" fill="#22d3ee" />
+                  <circle cx="8" cy="16" r="4" stroke="#67e8f9" stroke-width="1" />
+                  <circle cx="24" cy="10" r="3.5" fill="#38bdf8" />
+                  <circle cx="24" cy="22" r="3.5" fill="#38bdf8" />
+                  <path d="M12 16h6M18 18l6-3M18 14l6 3" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
+                </svg>
+              </div>
+            </div>
+          </a>
+          <div class="brand-texts">
+            <span class="brand-name">BeSharpX</span>
+            <span class="brand-author">Luis Carrasco</span>
+          </div>
+        </div>
+      </div>
+      <div class="top-bar-center">
+        <span class="title">Diagrama de Procesos Simple y Portable</span>
       </div>
       <div class="top-bar-actions">
         <label class="btn file-label">📤 Subir Excel
@@ -1247,6 +1568,7 @@
         </label>
         <button id="exportBtn" class="btn export-btn">⬇ Mi Excel</button>
         <button id="helpBtn" class="btn ghost" title="Ayuda / Modelo de Datos">❓ Ayuda</button>
+        <button type="button" id="downloadHtmlBtn" class="btn ghost" title="Obtener diagramas.html para usar en tu equipo">📥 Quiero descargar</button>
         <button id="clearBtn" class="btn ghost">Limpiar</button>
         <button id="resetStorageBtn" type="button" class="btn ghost" title="Borrar datos guardados en el navegador y recargar">Resetear</button>
       </div>
@@ -1372,91 +1694,77 @@
     </div>
   </div>
 
-  <!-- Globo descripción del nodo (clic en ⓘ) -->
-  <div id="nodeGlobo" class="node-globo"></div>
+  <div id="nodeGlobo" class="node-globo" aria-live="polite"></div>
 
-  <!-- Modal de Ayuda -->
-  <div id="helpModal" class="modal-overlay">
+  <!-- Modal de Ayuda (estructura tipo Calendario: intro, pasos numerados, pie) -->
+  <div id="helpModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Instrucciones y Modelo de Datos</h2>
-        <button id="closeHelpBtn" class="modal-close">&times;</button>
+        <h2 id="helpModalTitle">Diagrama</h2>
+        <button type="button" id="closeHelpBtn" class="modal-close" title="Cerrar">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Herramienta genérica para diagramar actores y simular flujos (procesos) que recorren el grafo. Sirve para
-          procesos, integraciones, casos de uso o cualquier secuencia paso a paso.</p>
+        <p class="help-lead">Para flujos con varios actores, a veces cuesta ver el orden real de las interacciones. Aquí
+          dibujas el grafo, simulas paso a paso y llevas todo a Excel (y viceversa) sin servidor intermedio.</p>
 
-        <h3>Cómo funciona</h3>
+        <h3 class="help-section-title">Forma de uso</h3>
+        <ol class="help-steps">
+          <li><strong>Carga datos.</strong> Sube un .xlsx con tres hojas (Procesos, Nodos, Pasos) o prueba <em>Demo</em> /
+            <em>Excel Demo</em> en la barra inferior.</li>
+          <li><strong>Elige un proceso</strong> en el panel derecho; el lienzo muestra solo ese flujo.</li>
+          <li><strong>Organiza.</strong> Arrastra nodos; <strong>ⓘ</strong> abre la descripción larga del actor.</li>
+          <li><strong>Simula.</strong> <em>▶ Ejecutar</em> y en la barra inferior <em>Play</em> / <em>Pausa</em>,
+            <em>Retroceder</em>, <em>Avanzar</em> y <strong>Ritmo</strong> (− / +). La acción larga va en la franja sobre el diagrama.</li>
+          <li><strong>Exporta.</strong> <em>Mi Excel</em> guarda Procesos, Nodos y Pasos; las flechas salen de los pasos
+            (puertos en Excel si usaste <em>Ajustar conexiones</em>).</li>
+          <li><strong>Barra superior:</strong> <em>Subir Excel</em>, <em>Mi Excel</em>, <em>Ayuda</em><span class="help-barra-extra">,
+            <em>Quiero descargar</em> (guardar la app como <code>diagramas.html</code>)</span>, <em>Limpiar</em> y
+            <em>Resetear</em> (borra lo guardado en el navegador y recarga).</li>
+        </ol>
+
+        <h3 class="help-section-title">Ajustar conexiones (puertos)</h3>
         <ul>
-          <li><strong>Lienzo:</strong> Arrastra los nodos para organizar el diagrama. Haz clic en el icono
-            <strong>ⓘ</strong> de un nodo para ver su descripción (si tiene).
-          </li>
-          <li><strong>Persistencia:</strong> Posiciones y datos se guardan en el navegador al recargar.</li>
-          <li><strong>Barra superior:</strong> <em>Subir Excel</em>, <em>Mi Excel</em>, <em>Ayuda</em> y <em>Limpiar</em>. A la derecha del todo en la barra inferior: <em>Ajustar conexiones</em>, <em>Grid</em>, <em>Demo</em>, <em>Excel Demo</em>.
-          </li>
-          <li><strong>Procesos:</strong> Elige un proceso en el panel derecho. <em>Seleccionar</em> para ver pasos; <em>▶
-              Ejecutar</em> inicia la simulación. En la barra inferior: el mismo botón alterna <em>Play</em> (inicio o continuar) y
-            <em>Pausa</em> mientras corre; luego <em>Retroceder</em>, <em>Avanzar</em> y <strong>Ritmo</strong> (− / +) para los segundos por
-            paso. La <strong>descripción larga</strong> del paso se muestra en la franja arriba del diagrama; debajo,
-            los indicadores de cuenta atrás. La lista de pasos usa la descripción corta.
-          </li>
-          <li><strong>Modo Demo / Excel Demo:</strong> En la barra inferior derecha, <em>Demo</em> carga el ejemplo en
-            memoria (y lo guarda). <em>Excel Demo</em> descarga la plantilla (.xlsx) con la misma estructura.</li>
-          <li><strong>Mi Excel:</strong> Exporta el estado actual a un .xlsx: posiciones de nodos (x, y), conexiones,
-            procesos y pasos con los punteros (in_port, out_port) que hayas ajustado. Si subes un Excel, mueves nodos o editas
-            punteros con «Ajustar conexiones», al descargar <em>Mi Excel</em> todo queda actualizado.</li>
-          <li><strong>✎ Ajustar conexiones:</strong> activa el modo y <em>Ajustar ruta</em> en cada nodo. Al pulsar, destacas el nodo:
-            <strong>1)</strong> elige en el panel derecho la flecha (paso) a corregir;
-            <strong>2)</strong> el punto actual de esa flecha en el nodo se resalta y el resto son candidatos;
-            <strong>3)</strong> pulsa el nuevo punto: la punta se mueve y la flecha se deselecciona (vuelve al paso 1).
-            Cian = salida, ámbar = entrada. Con una sola flecha en el nodo se salta el paso 1. Cierra con <em>Ajustar ruta</em> o <em>✎ Cerrar ajuste</em>.</li>
+          <li>Activa <em>✎ Ajustar conexiones</em> y <em>Ajustar ruta</em> en un nodo. <strong>1)</strong> Elige la flecha (paso) en el panel.
+            <strong>2)</strong> Se resalta el punto actual; el resto son candidatos. <strong>3)</strong> Pulsa el nuevo punto.
+            Cian = salida, ámbar = entrada. Una sola flecha en el nodo omite el paso 1.</li>
         </ul>
 
-        <h3>Estructura del Excel</h3>
-        <p>El archivo debe tener <strong>4 hojas</strong> (puedes descargar la plantilla con el botón <em>Excel Demo</em> en la barra inferior, o <button
+        <h3 class="help-section-title">Estructura del Excel</h3>
+        <p>La validación ocurre <strong>antes</strong> de cargar: si falla, ves el detalle en un diálogo y el diagrama actual no cambia.</p>
+        <p>Orden de hojas: <strong>Procesos</strong>, <strong>Nodos</strong>, <strong>Pasos</strong>. Plantilla:
+          <em>Excel Demo</em> o <button type="button"
             onclick="downloadDemo(); document.getElementById('helpModal').classList.remove('active');"
-            style="background:none; border:none; color:var(--btn); text-decoration:underline; cursor:pointer; padding:0; font-size:inherit;">descargar
-            ahora</button>):</p>
+            style="background:none; border:none; color:var(--btn); text-decoration:underline; cursor:pointer; padding:0; font-size:inherit;">descargar ahora</button>.</p>
 
-        <h4>1. <code>Nodos</code></h4>
-        <ul>
-          <li><code>id</code>: Identificador único (ej. <em>API, DB, SERVICIO_A</em>).</li>
-          <li><code>label</code>: Nombre visible en el diagrama.</li>
-          <li><code>type</code>: Tipo o categoría (ej. <em>Entrada, Servicio, Datos</em>).</li>
-          <li><code>x</code> / <code>y</code>: Posición inicial en el lienzo.</li>
-          <li><code>visible</code>: 1 o 0. (Oculta actores sin borrar el dato).</li>
-          <li><code>description</code>: (Opcional) Texto que se muestra al hacer clic en el <strong>ⓘ</strong>.</li>
-        </ul>
-
-        <h4>2. <code>Conexiones</code></h4>
-        <ul>
-          <li>Solo posee 2 columnas: <code>from</code>, <code>to</code> indicando los IDs de nodos que enlazan
-            estáticamente de antemano.</li>
-        </ul>
-
-        <h4>3. <code>Procesos</code> (La cabecera del negocio)</h4>
+        <h3>1. <code>Procesos</code></h3>
         <ul>
           <li><code>id</code>: ID del proceso (ej. <em>P-001, PagoTarjeta</em>).</li>
           <li><code>nombre</code>: Nombre amigable y corto del proceso.</li>
           <li><code>descripcion</code>: Nota del proceso.</li>
         </ul>
 
-        <h4>4. <code>Pasos</code> (El Guión Transitivo)</h4>
+        <h3>2. <code>Nodos</code></h3>
         <ul>
-          <li><code>proceso_id</code>: ID del proceso al que pertecene (ej. P-001).</li>
-          <li><code>secuencia</code>: Orden de ejecución numérico (1, 2, 3…).</li>
-          <li><code>nodo</code>: Actor / Sistema que inicia la acción (Origen).</li>
-          <li><code>accion</code>: Breve descripción de lo que ocurre en este milísegundo. Muta a la franja superior y
-            panel.</li>
-          <li><code>puerta_salida</code>: Vía del puerto geométrico de origen (<code>R</code>, <code>UL</code>,
-            <code>DR</code>, etc).
-          </li>
-          <li><code>destino</code>: A qué Actor viaja esta ejecución.</li>
-          <li><code>puerta_destino</code>: Vía de acople geométrico para recibir en desitno (<code>L</code>,
-            <code>UR</code>, etc).
-          </li>
+          <li><code>id</code>: Identificador único (ej. <em>API, DB, SERVICIO_A</em>).</li>
+          <li><code>label</code>: Nombre visible en el diagrama.</li>
+          <li><code>type</code>: Tipo o categoría (ej. <em>Entrada, Servicio, Datos</em>).</li>
+          <li><code>x</code> / <code>y</code>: Posición inicial en el lienzo.</li>
+          <li><code>visible</code>: 1 o 0. (Oculta actores sin borrar el dato).</li>
+          <li><code>description</code>: (Opcional) Texto con <strong>ⓘ</strong>; se exporta en el Excel.</li>
         </ul>
-        <p><em>Con este guión Secuencial asíncrono, cada acción "viaja" uniendo gráficamente Nodo y Destino.</em></p>
+
+        <h3>3. <code>Pasos</code></h3>
+        <ul>
+          <li><code>proceso_id</code>: ID del proceso al que pertenece (ej. P-001).</li>
+          <li><code>secuencia</code>: Orden de ejecución (1, 2, 3…).</li>
+          <li><code>nodo</code>: Origen de la acción.</li>
+          <li><code>accion</code>: Descripción del paso (franja superior y panel).</li>
+          <li><code>puerta_salida</code>: Puerto de origen (<code>R</code>, <code>UL</code>, <code>DR</code>, etc.).</li>
+          <li><code>destino</code>: Actor destino.</li>
+          <li><code>puerta_destino</code>: Puerto en destino (<code>L</code>, <code>UR</code>, etc.).</li>
+        </ul>
+        <p>Las flechas del lienzo se derivan de los pasos (origen→destino; si el par se repite entre procesos, mandan los puertos del último paso al leer el archivo).</p>
+        <p class="help-footnote">Los datos y posiciones se guardan solo en este navegador. <em>Limpiar</em> o <em>Resetear</em> pueden borrar tu trabajo local; no hay copia en servidor.</p>
       </div>
     </div>
   </div>
@@ -1474,6 +1782,45 @@
       <div class="modal-footer">
         <button type="button" id="cancelResetBtn" class="btn ghost">Cancelar</button>
         <button type="button" id="confirmResetBtn" class="btn btn-primary-reset">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: descargar app como HTML (precauciones) -->
+  <div id="downloadHtmlModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="downloadHtmlTitle">
+    <div class="modal-content modal-dialog">
+      <div class="modal-header">
+        <h2 id="downloadHtmlTitle">Descargar la aplicación</h2>
+        <button type="button" id="closeDownloadHtmlBtn" class="modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Obtendrás un archivo <strong>diagramas.html</strong> con esta misma aplicación (una sola página). Léelo antes de guardar:</p>
+        <ul>
+          <li><strong>Internet:</strong> importar y exportar Excel usa una librería cargada desde internet (CDN). Sin conexión, esa parte no funcionará aunque abras el archivo en tu PC.</li>
+          <li><strong>Tus datos:</strong> lo guardado en el navegador <strong>no</strong> se incluye automáticamente en el .html. Para respaldar tu trabajo usa <em>Mi Excel</em>.</li>
+          <li><strong>Abrir desde el disco:</strong> según el navegador, guardar en localStorage u otras funciones pueden comportarse distinto que al usar la web en https://.</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="cancelDownloadHtmlBtn" class="btn ghost">Cancelar</button>
+        <button type="button" id="confirmDownloadHtmlBtn" class="btn export-btn">Descargar diagramas.html</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal errores de validación Excel -->
+  <div id="excelErrorModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="excelErrorTitle">
+    <div class="modal-content modal-dialog">
+      <div class="modal-header">
+        <h2 id="excelErrorTitle">No se puede cargar el Excel</h2>
+        <button type="button" id="closeExcelErrorBtn" class="modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="excel-error-intro">Se detectaron los siguientes problemas (primero forma del archivo, luego contenido):</p>
+        <ul id="excelErrorList" class="excel-error-list"></ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dismissExcelErrorBtn" class="btn ghost">Entendido</button>
       </div>
     </div>
   </div>
@@ -1497,33 +1844,147 @@
       countdownTimer: null,
       countdownSecond: 0,
       stepDelaySeconds: 4,
-      dragging: null
+      dragging: null,
+      demoLayoutVersion: 0
     };
+
+    /** Copia del estado antes de entrar en modo Demo; al salir se restaura y no se fuerza la modal de bienvenida. */
+    let snapshotBeforeDemo = null;
+
+    function cloneStateForDemoSnapshot() {
+      return {
+        actors: state.actors.map(a => ({ ...a })),
+        procesos: state.procesos.map(p => ({ ...p })),
+        pasos: state.pasos.map(p => ({ ...p })),
+        demoLayoutVersion: state.demoLayoutVersion | 0
+      };
+    }
+
+    function restoreStateAfterDemo(snap) {
+      state.actors = (snap.actors || []).map(a => ({ ...a, description: a.description || '' }));
+      state.procesos = (snap.procesos || []).map(p => ({ ...p }));
+      state.pasos = (snap.pasos || []).map(p => ({ ...p }));
+      state.edges = edgesFromPasos(state.pasos);
+      state.demoLayoutVersion = snap.demoLayoutVersion | 0;
+      state.selectedTxId = null;
+      state.stepIndex = -1;
+      stopRun();
+      resetPortEditMode();
+    }
+
+    function exitDemoMode() {
+      const loadDemoEl = $('#loadDemoBtn');
+      if (loadDemoEl) {
+        loadDemoEl.textContent = '▶ Demo';
+        loadDemoEl.classList.remove('port-edit-active');
+      }
+      const snap = snapshotBeforeDemo;
+      snapshotBeforeDemo = null;
+      if (snap && (snap.actors.length > 0 || snap.procesos.length > 0)) {
+        restoreStateAfterDemo(snap);
+        renderActors();
+        renderEvents();
+        clearStepsPanel();
+        drawAll();
+        updatePortEditButtonState();
+        saveState();
+        hideLanding();
+      } else {
+        emptyState();
+      }
+    }
 
     /* Posiciones: rectángulo como en captura (~X 206/669; Y visual 478 arriba / 233 abajo → y SVG 128 / 373) */
     const DEMO = {
       actors: [
-        { id: 'NUBE', label: 'Nube', type: 'Atmósfera', x: 206, y: 128, visible: 1, description: 'Vapor de agua enfriado; condensación en el cielo.' },
-        { id: 'LLUVIA', label: 'Lluvia', type: 'Precipitación', x: 669, y: 128, visible: 1, description: 'Agua que cae por gravedad desde las nubes.' },
-        { id: 'MAR', label: 'Mar', type: 'Agua', x: 206, y: 373, visible: 1, description: 'Océanos y mares: gran reserva de agua salada.' },
-        { id: 'RIO', label: 'Río', type: 'Agua dulce', x: 669, y: 373, visible: 1, description: 'Corriente que lleva el agua hacia el mar.' }
-      ],
-      edges: [
-        { from: 'NUBE', to: 'LLUVIA', out_port: 'R', in_port: 'L' },
-        { from: 'LLUVIA', to: 'RIO', out_port: 'DL', in_port: 'UR' },
-        { from: 'RIO', to: 'MAR', out_port: 'L', in_port: 'R' },
-        { from: 'MAR', to: 'NUBE', out_port: 'UL', in_port: 'DR' }
+        /* Ciclo del agua: bloque superior (y bajo) para no chocar con compra online */
+        { id: 'NUBE', label: 'Nube', type: 'Atmósfera', x: 206, y: 108, visible: 1, description: 'Vapor de agua enfriado; condensación en el cielo.' },
+        { id: 'LLUVIA', label: 'Lluvia', type: 'Precipitación', x: 669, y: 108, visible: 1, description: 'Agua que cae por gravedad desde las nubes.' },
+        { id: 'MAR', label: 'Mar', type: 'Agua', x: 206, y: 228, visible: 1, description: 'Océanos y mares: gran reserva de agua salada.' },
+        { id: 'RIO', label: 'Río', type: 'Agua dulce', x: 669, y: 228, visible: 1, description: 'Corriente que lleva el agua hacia el mar.' },
+        /* Compra online: layout en T (captura usuario). Y en Excel/UI = 660 - y_SVG - NODE_H */
+        { id: 'CLIENTE', label: 'Cliente', type: 'Persona', x: 69, y: 110, visible: 1, description: 'Cliente quiere comprar algo en un sitio Web.' },
+        { id: 'WEB', label: 'Tienda web', type: 'Canal digital', x: 466, y: 110, visible: 1, description: 'Sitio o app de comercio: catálogo, carrito y checkout.' },
+        { id: 'PASARELA', label: 'Pasarela', type: 'Pagos', x: 840, y: 110, visible: 1, description: 'Procesador de pagos en línea.' },
+        { id: 'CARRITO', label: 'Carrito', type: 'Canal digital', x: 466, y: 286, visible: 1, description: 'Línea de pedido antes del pago.' },
+        { id: 'BANCO', label: 'Banco', type: 'Finanzas', x: 840, y: 460, visible: 1, description: 'Autoriza o rechaza el cargo (demo en camino feliz).' },
+        { id: 'BODEGA', label: 'Bodega', type: 'Logística', x: 466, y: 460, visible: 1, description: 'Prepara y embala el pedido para el courier.' },
+        { id: 'COURIER', label: 'Courier', type: 'Logística', x: 69, y: 460, visible: 1, description: 'Retira en bodega y entrega al cliente.' }
       ],
       procesos: [
-        { id: 'P-AGUA', nombre: 'Ciclo del agua', descripcion: 'Evaporación, lluvia y vuelta al mar.' }
+        { id: 'P-AGUA', nombre: 'Ciclo del agua', descripcion: 'Evaporación, lluvia y vuelta al mar.' },
+        { id: 'P-COMPRA', nombre: 'Compra online', descripcion: 'Compra típica en internet (camino feliz, sin ramas).' }
       ],
       pasos: [
         { proceso_id: 'P-AGUA', seq: 1, from_node: 'NUBE', action: 'Las gotas se juntan y caen', out_port: 'R', to_node: 'LLUVIA', in_port: 'L' },
         { proceso_id: 'P-AGUA', seq: 2, from_node: 'LLUVIA', action: 'El agua escurre al suelo y al cauce', out_port: 'DL', to_node: 'RIO', in_port: 'UR' },
         { proceso_id: 'P-AGUA', seq: 3, from_node: 'RIO', action: 'El río desemboca en el mar', out_port: 'L', to_node: 'MAR', in_port: 'R' },
-        { proceso_id: 'P-AGUA', seq: 4, from_node: 'MAR', action: 'El sol calienta el agua; sube el vapor', out_port: 'UL', to_node: 'NUBE', in_port: 'DR' }
+        { proceso_id: 'P-AGUA', seq: 4, from_node: 'MAR', action: 'El sol calienta el agua; sube el vapor', out_port: 'UL', to_node: 'NUBE', in_port: 'DR' },
+        { proceso_id: 'P-COMPRA', seq: 1, from_node: 'CLIENTE', action: 'Entra a la página de la tienda', out_port: 'R', to_node: 'WEB', in_port: 'L' },
+        { proceso_id: 'P-COMPRA', seq: 2, from_node: 'WEB', action: 'Busca productos y los agrega al carrito', out_port: 'DL', to_node: 'CARRITO', in_port: 'UL' },
+        { proceso_id: 'P-COMPRA', seq: 3, from_node: 'CARRITO', action: 'Revisa el carrito y confirma la compra', out_port: 'UR', to_node: 'WEB', in_port: 'DR' },
+        { proceso_id: 'P-COMPRA', seq: 4, from_node: 'WEB', action: 'Redirige al flujo de pago', out_port: 'R', to_node: 'PASARELA', in_port: 'L' },
+        { proceso_id: 'P-COMPRA', seq: 5, from_node: 'PASARELA', action: 'Solicita autorización del cargo al banco', out_port: 'DL', to_node: 'BANCO', in_port: 'UL' },
+        {
+          proceso_id: 'P-COMPRA',
+          seq: 6,
+          from_node: 'BANCO',
+          action: 'Pago aprobado: notifica a la bodega para preparar el pedido y se envía confirmación por correo al cliente',
+          out_port: 'L',
+          to_node: 'BODEGA',
+          in_port: 'R'
+        },
+        { proceso_id: 'P-COMPRA', seq: 7, from_node: 'BODEGA', action: 'Pedido listo; el courier retira en bodega', out_port: 'L', to_node: 'COURIER', in_port: 'R' },
+        { proceso_id: 'P-COMPRA', seq: 8, from_node: 'COURIER', action: 'Entrega el pedido al cliente', out_port: 'UL', to_node: 'CLIENTE', in_port: 'DL' }
       ]
     };
+
+    /** Si subes el layout del demo en DEMO, incrementa esto para que localStorage antiguo actualice x,y. */
+    const DEMO_LAYOUT_VERSION = 3;
+
+    /** Estado guardado con el mismo conjunto de nodos que DEMO pero posiciones viejas → aplica coordenadas actuales. */
+    function migrateBundledDemoLayout(parsed) {
+      if ((parsed.demoLayoutVersion | 0) >= DEMO_LAYOUT_VERSION) return false;
+      const actors = parsed.actors || [];
+      if (actors.length !== DEMO.actors.length) return false;
+      const demoIds = DEMO.actors.map(a => a.id).sort().join('|');
+      const savedIds = actors.map(a => a.id).sort().join('|');
+      if (demoIds !== savedIds) return false;
+      const demoById = Object.fromEntries(DEMO.actors.map(a => [a.id, a]));
+      for (const a of actors) {
+        const d = demoById[a.id];
+        if (d) {
+          a.x = d.x;
+          a.y = d.y;
+        }
+      }
+      parsed.demoLayoutVersion = DEMO_LAYOUT_VERSION;
+      return true;
+    }
+
+    /** Una fila por par dirigido único (origen→destino); puertos del último paso que use esa arista en orden proceso/secuencia. */
+    function edgesFromPasos(pasos) {
+      const list = [...(pasos || [])].sort((a, b) => {
+        if (a.proceso_id !== b.proceso_id) return a.proceso_id.localeCompare(b.proceso_id);
+        return a.seq - b.seq;
+      });
+      const byKey = new Map();
+      for (const p of list) {
+        const fn = normId(p.from_node);
+        const tn = normId(p.to_node);
+        if (!fn || !tn) continue;
+        const key = `${fn}|${tn}`;
+        const edge = { from: p.from_node, to: p.to_node };
+        const op = p.out_port ? normId(p.out_port) : '';
+        const ip = p.in_port ? normId(p.in_port) : '';
+        if (op && ip) {
+          edge.out_port = op;
+          edge.in_port = ip;
+        }
+        byKey.set(key, edge);
+      }
+      return Array.from(byKey.values());
+    }
 
     const $ = sel => document.querySelector(sel);
     const eventList = $('#eventList');
@@ -1578,6 +2039,301 @@
       return String(v).trim().toUpperCase();
     }
 
+    const EXCEL_ERR_CAP = 120;
+    const EXCEL_ERR_SHOW = 20;
+
+    function pushExcelErr(bucket, msg) {
+      if (bucket.length >= EXCEL_ERR_CAP) return;
+      bucket.push(msg);
+    }
+
+    function normHeaderKey(k) {
+      return String(k || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '');
+    }
+
+    function trimCell(v) {
+      if (v === null || v === undefined) return '';
+      return String(v).trim();
+    }
+
+    function isRowEmpty(row) {
+      if (!row || typeof row !== 'object') return true;
+      return !Object.keys(row).some(k => trimCell(row[k]) !== '');
+    }
+
+    function cellByNormAliases(row, aliases) {
+      if (!row) return '';
+      const want = new Set(aliases);
+      for (const key of Object.keys(row)) {
+        if (want.has(normHeaderKey(key))) return trimCell(row[key]);
+      }
+      return '';
+    }
+
+    /** Primera columna que coincida, en el orden indicado (útil si hay varias cabeceras posibles). */
+    function cellByNormAliasesOrdered(row, orderedNormNames) {
+      if (!row) return '';
+      for (const name of orderedNormNames) {
+        for (const key of Object.keys(row)) {
+          if (normHeaderKey(key) === name) return trimCell(row[key]);
+        }
+      }
+      return '';
+    }
+
+    function sheetRowsJson(ws) {
+      if (!ws) return [];
+      return XLSX.utils.sheet_to_json(ws, { defval: '' });
+    }
+
+    function resolveSheetName(sheetNames, wanted) {
+      const w = wanted.trim().toLowerCase();
+      return sheetNames.find(n => String(n).trim().toLowerCase() === w) || null;
+    }
+
+    function headerNormSetFromRow(row) {
+      const s = new Set();
+      if (!row) return s;
+      Object.keys(row).forEach(k => s.add(normHeaderKey(k)));
+      return s;
+    }
+
+    function showExcelValidationModal(errors) {
+      const modal = $('#excelErrorModal');
+      const list = $('#excelErrorList');
+      if (!modal || !list) return;
+      list.innerHTML = '';
+      errors.slice(0, EXCEL_ERR_SHOW).forEach(msg => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        list.appendChild(li);
+      });
+      if (errors.length > EXCEL_ERR_SHOW) {
+        const more = document.createElement('li');
+        more.className = 'excel-error-more';
+        more.textContent = `…y ${errors.length - EXCEL_ERR_SHOW} error(es) adicional(es).`;
+        list.appendChild(more);
+      }
+      modal.classList.add('active');
+    }
+
+    function hideExcelValidationModal() {
+      const modal = $('#excelErrorModal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    /**
+     * Validación bloqueante: primero forma (hojas, columnas, filas), luego contenido y lógica.
+     * No muta el libro; solo lectura.
+     */
+    function validateExcelWorkbook(workbook) {
+      const form = [];
+      const content = [];
+      const pushF = m => pushExcelErr(form, m);
+      const pushC = m => pushExcelErr(content, m);
+
+      if (!workbook || !Array.isArray(workbook.SheetNames) || workbook.SheetNames.length === 0) {
+        pushF('El archivo no contiene hojas reconocibles o no pudo interpretarse como Excel.');
+        return { ok: false, errors: form };
+      }
+
+      const names = workbook.SheetNames;
+      const snNodos = resolveSheetName(names, 'Nodos');
+      const snProc = resolveSheetName(names, 'Procesos');
+      const snPasos = resolveSheetName(names, 'Pasos');
+
+      if (!snNodos) pushF("Falta la hoja 'Nodos'.");
+      if (!snProc) pushF("Falta la hoja 'Procesos'.");
+      if (!snPasos) pushF("Falta la hoja 'Pasos'.");
+
+      if (form.length > 0) {
+        return { ok: false, errors: form.concat(content) };
+      }
+
+      const rowsN = sheetRowsJson(workbook.Sheets[snNodos]);
+      const rowsP = sheetRowsJson(workbook.Sheets[snProc]);
+      const rowsS = sheetRowsJson(workbook.Sheets[snPasos]);
+
+      if (!rowsN.length) pushF("La hoja 'Nodos' no tiene filas de datos.");
+      if (!rowsP.length) pushF("La hoja 'Procesos' no tiene filas de datos.");
+      if (!rowsS.length) pushF("La hoja 'Pasos' no tiene filas de datos.");
+
+      if (form.length > 0) {
+        return { ok: false, errors: form.concat(content) };
+      }
+
+      const hn = headerNormSetFromRow(rowsN[0]);
+      if (!['id', 'idnodo'].some(a => hn.has(a))) {
+        pushF("En 'Nodos' falta columna de id. de nodo (use 'id' o 'IdNodo').");
+      }
+      if (!['label', 'nombre', 'name'].some(a => hn.has(a))) {
+        pushF("En 'Nodos' falta nombre visible (use 'label', 'Nombre', etc.).");
+      }
+      if (!['type', 'tipo'].some(a => hn.has(a))) {
+        pushF("En 'Nodos' falta tipo (use 'type' o 'Tipo').");
+      }
+
+      const hp = headerNormSetFromRow(rowsP[0]);
+      if (!['id', 'idproceso'].some(a => hp.has(a))) {
+        pushF("En 'Procesos' falta id. de proceso (use 'id' o 'IdProceso').");
+      }
+      if (!['nombre', 'nombreproceso', 'name'].some(a => hp.has(a))) {
+        pushF("En 'Procesos' falta nombre (use 'nombre', 'NombreProceso', etc.).");
+      }
+
+      const hs = headerNormSetFromRow(rowsS[0]);
+      if (!['proceso_id', 'idproceso', 'id'].some(a => hs.has(a))) {
+        pushF("En 'Pasos' falta referencia al proceso (use 'proceso_id', 'IdProceso' o 'id').");
+      }
+      if (!['secuencia', 'seq'].some(a => hs.has(a))) {
+        pushF("En 'Pasos' falta secuencia (use 'secuencia' o 'seq').");
+      }
+      if (!['nodo', 'from_node'].some(a => hs.has(a))) {
+        pushF("En 'Pasos' falta nodo origen (use 'nodo' o 'from_node').");
+      }
+      if (!['destino', 'to_node'].some(a => hs.has(a))) {
+        pushF("En 'Pasos' falta nodo destino (use 'destino' o 'to_node').");
+      }
+
+      if (form.length > 0) {
+        return { ok: false, errors: form.concat(content) };
+      }
+
+      const nodeSet = new Set();
+      const nodeIdsSeen = new Set();
+      rowsN.forEach((row, i) => {
+        if (isRowEmpty(row)) return;
+        const rn = i + 2;
+        const id = normId(cellByNormAliases(row, ['id', 'idnodo']));
+        const label = trimCell(cellByNormAliases(row, ['label', 'nombre', 'name']));
+        const typ = trimCell(cellByNormAliases(row, ['type', 'tipo']));
+        if (!id) {
+          pushC(`En la hoja 'Nodos', fila ${rn}: id. de nodo vacío.`);
+          return;
+        }
+        if (nodeIdsSeen.has(id)) {
+          pushC(`En la hoja 'Nodos', fila ${rn}: id. duplicado '${id}'.`);
+        }
+        nodeIdsSeen.add(id);
+        nodeSet.add(id);
+        if (!label) {
+          pushC(`En la hoja 'Nodos', fila ${rn}: nombre vacío para el nodo '${id}'.`);
+        }
+        if (!typ) {
+          pushC(`En la hoja 'Nodos', fila ${rn}: tipo vacío para el nodo '${id}'.`);
+        }
+      });
+
+      if (nodeSet.size === 0) {
+        pushC("La hoja 'Nodos' no define ningún nodo válido.");
+      }
+
+      const procesoSet = new Set();
+      const procIdsSeen = new Set();
+      rowsP.forEach((row, i) => {
+        if (isRowEmpty(row)) return;
+        const rn = i + 2;
+        const id = normId(cellByNormAliases(row, ['id', 'idproceso']));
+        const nombre = trimCell(cellByNormAliases(row, ['nombre', 'nombreproceso', 'name']));
+        if (!id) {
+          pushC(`En la hoja 'Procesos', fila ${rn}: id. de proceso vacío.`);
+          return;
+        }
+        if (procIdsSeen.has(id)) {
+          pushC(`En la hoja 'Procesos', fila ${rn}: proceso duplicado '${id}'.`);
+        }
+        procIdsSeen.add(id);
+        procesoSet.add(id);
+        if (!nombre) {
+          pushC(`En la hoja 'Procesos', fila ${rn}: nombre vacío para el proceso '${id}'.`);
+        }
+      });
+
+      if (procesoSet.size === 0) {
+        pushC("La hoja 'Procesos' no define ningún proceso válido.");
+      }
+
+      const stepKeySeen = new Set();
+      const stepsByProc = new Map();
+      rowsS.forEach((row, i) => {
+        if (isRowEmpty(row)) return;
+        const rn = i + 2;
+        const pid = normId(cellByNormAliasesOrdered(row, ['proceso_id', 'idproceso', 'id']));
+        const seqRaw = cellByNormAliases(row, ['secuencia', 'seq']);
+        const fn = normId(cellByNormAliases(row, ['nodo', 'from_node']));
+        const tn = normId(cellByNormAliases(row, ['destino', 'to_node']));
+        if (!pid) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: referencia a proceso vacía.`);
+          return;
+        }
+        if (procesoSet.size && !procesoSet.has(pid)) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: el proceso '${pid}' no existe en 'Procesos'.`);
+        }
+        if (!trimCell(seqRaw)) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: secuencia vacía.`);
+          return;
+        }
+        const seqNum = Number(seqRaw);
+        if (!Number.isFinite(seqNum) || !Number.isInteger(seqNum) || seqNum < 1) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: la secuencia debe ser un entero ≥ 1 (recibido: '${trimCell(seqRaw)}').`);
+          return;
+        }
+        if (!fn) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: nodo de origen vacío.`);
+          return;
+        }
+        if (!tn) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: nodo de destino vacío.`);
+          return;
+        }
+        if (nodeSet.size && !nodeSet.has(fn)) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: el nodo '${fn}' no existe en 'Nodos'.`);
+        }
+        if (nodeSet.size && !nodeSet.has(tn)) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: el destino '${tn}' no existe en 'Nodos'.`);
+        }
+        const sk = `${pid}|${seqNum}`;
+        if (stepKeySeen.has(sk)) {
+          pushC(`En la hoja 'Pasos', fila ${rn}: secuencia ${seqNum} duplicada para el proceso '${pid}'.`);
+        }
+        stepKeySeen.add(sk);
+        if (!stepsByProc.has(pid)) stepsByProc.set(pid, []);
+        stepsByProc.get(pid).push({ rn, seq: seqNum, fn, tn });
+      });
+
+      procesoSet.forEach(pid => {
+        const arr = stepsByProc.get(pid);
+        if (!arr || arr.length === 0) {
+          pushC(`El proceso '${pid}' no tiene pasos definidos en 'Pasos'.`);
+        }
+      });
+
+      stepsByProc.forEach((list, pid) => {
+        if (!list.length) return;
+        list.sort((a, b) => a.seq - b.seq);
+        if (list[0].seq !== 1) {
+          pushC(`El proceso '${pid}' debe comenzar en la secuencia 1 (el primer paso tiene secuencia ${list[0].seq}).`);
+        }
+        for (let i = 0; i < list.length; i++) {
+          if (list[i].seq !== i + 1) {
+            pushC(`El proceso '${pid}': la secuencia no es continua; se esperaba ${i + 1} y se encontró ${list[i].seq}.`);
+            break;
+          }
+        }
+        for (let i = 0; i < list.length - 1; i++) {
+          if (list[i].tn !== list[i + 1].fn) {
+            pushC(`El proceso '${pid}': entre las secuencias ${list[i].seq} y ${list[i + 1].seq} el destino '${list[i].tn}' no coincide con el origen '${list[i + 1].fn}' del siguiente paso.`);
+          }
+        }
+      });
+
+      const allErr = form.concat(content);
+      return { ok: allErr.length === 0, errors: allErr };
+    }
+
     // Excel I/O principal: lee hojas, tolera faltantes y normaliza columnas esperadas.
     function loadWorkbook(workbook) {
       // Limpiar el estado previo completo para que los nodos no se combinen
@@ -1598,80 +2354,68 @@
       eventList.innerHTML = '';
       clearStepsPanel();
 
-      const getRows = name => {
-        const ws = workbook.Sheets[name];
-        if (!ws) {
-          return [];
-        }
+      const getRows = canonical => {
+        const resolved = resolveSheetName(workbook.SheetNames, canonical);
+        if (!resolved) return [];
+        const ws = workbook.Sheets[resolved];
+        if (!ws) return [];
         return XLSX.utils.sheet_to_json(ws, { defval: '' });
       };
 
       const actorsRaw = getRows('Nodos');
-      const edgesRaw = getRows('Conexiones');
       const procRaw = getRows('Procesos');
       const pasosRaw = getRows('Pasos');
 
       state.actors = normalize(actorsRaw, r => {
-        const id = normId(r.id);
+        const id = normId(cellByNormAliasesOrdered(r, ['id', 'idnodo']));
         if (!id) return null;
-        const desc = normId(r.description || r.tooltip || '');
-        const readY = Number(r.y) || 20;
+        const desc = trimCell(cellByNormAliases(r, ['description', 'tooltip', 'descripcion']));
+        const readY = Number(cellByNormAliases(r, ['y'])) || 20;
         const svgY = 660 - readY - NODE_H;
+        const vis = trimCell(cellByNormAliases(r, ['visible']));
 
         return {
           id,
-          label: normId(r.label) || id,
-          type: normId(r.type) || 'N/A',
-          x: Number(r.x) || 20,
+          label: trimCell(cellByNormAliases(r, ['label', 'nombre', 'name'])) || id,
+          type: trimCell(cellByNormAliases(r, ['type', 'tipo'])) || 'N/A',
+          x: Number(cellByNormAliases(r, ['x'])) || 20,
           y: svgY,
-          visible: String(r.visible).trim() !== '0',
+          visible: vis === '' ? true : String(vis).trim() !== '0',
           description: desc
         };
       });
 
-      state.edges = normalize(edgesRaw, r => {
-        const from = normId(r.from);
-        const to = normId(r.to);
-        if (!from || !to) return null;
-        const outP = normId(r.puerta_salida || r.out_port || '');
-        const inP = normId(r.puerta_destino || r.in_port || '');
-        const edge = { from, to };
-        if (outP && inP) {
-          edge.out_port = outP;
-          edge.in_port = inP;
-        }
-        return edge;
-      });
-
       state.procesos = normalize(procRaw, r => {
-        const id = normId(r.id);
+        const id = normId(cellByNormAliasesOrdered(r, ['id', 'idproceso']));
         if (!id) return null;
         return {
           id,
-          nombre: normId(r.nombre) || id,
-          descripcion: normId(r.descripcion)
+          nombre: trimCell(cellByNormAliases(r, ['nombre', 'nombreproceso', 'name'])) || id,
+          descripcion: trimCell(cellByNormAliases(r, ['descripcion', 'description']))
         };
       });
 
       state.pasos = normalize(pasosRaw, r => {
-        const proceso_id = normId(r.id || r.proceso_id);
-        const from_node = normId(r.nodo || r.from_node);
-        const to_node = normId(r.destino || r.to_node);
+        const proceso_id = normId(cellByNormAliasesOrdered(r, ['proceso_id', 'idproceso', 'id']));
+        const from_node = normId(cellByNormAliasesOrdered(r, ['nodo', 'from_node']));
+        const to_node = normId(cellByNormAliasesOrdered(r, ['destino', 'to_node']));
         if (!proceso_id || !from_node) return null;
         return {
           proceso_id,
-          seq: Number(r.secuencia || r.seq) || 0,
+          seq: Number(cellByNormAliases(r, ['secuencia', 'seq'])) || 0,
           from_node,
-          action: normId(r.accion || r.action),
-          out_port: normId(r.puerta_salida || r.out_port),
+          action: trimCell(cellByNormAliases(r, ['accion', 'action'])),
+          out_port: normId(cellByNormAliases(r, ['puerta_salida', 'out_port'])),
           to_node,
-          in_port: normId(r.puerta_destino || r.in_port)
+          in_port: normId(cellByNormAliases(r, ['puerta_destino', 'in_port']))
         };
       });
       state.pasos.sort((a, b) => {
         if (a.proceso_id !== b.proceso_id) return a.proceso_id.localeCompare(b.proceso_id);
         return a.seq - b.seq;
       });
+
+      state.edges = edgesFromPasos(state.pasos);
 
       state.selectedTxId = null;
       state.stepIndex = -1;
@@ -1680,7 +2424,9 @@
       clearStepsPanel();
       drawAll();
       updatePortEditButtonState();
+      state.demoLayoutVersion = 0;
       saveState();
+      snapshotBeforeDemo = null;
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = '▶ Demo'; loadDemoEl.classList.remove('port-edit-active'); }
       hideLanding();
@@ -1737,6 +2483,29 @@
       return state.pasos.filter(p => p.proceso_id === pid);
     }
 
+    /** Nodos que participan en los pasos de un proceso (para mostrar solo ese subgrafo en el lienzo). */
+    function nodeIdsForProceso(txId) {
+      const ids = new Set();
+      if (!txId) return ids;
+      for (const p of state.pasos) {
+        if (p.proceso_id !== txId) continue;
+        if (p.from_node) ids.add(normId(p.from_node));
+        if (p.to_node) ids.add(normId(p.to_node));
+      }
+      return ids;
+    }
+
+    /** Aristas dirigidas que aparecen como pasos del proceso (from|to). */
+    function directedEdgeKeysForProceso(txId) {
+      const keys = new Set();
+      if (!txId) return keys;
+      for (const p of state.pasos) {
+        if (p.proceso_id !== txId) continue;
+        if (p.from_node && p.to_node) keys.add(`${normId(p.from_node)}|${normId(p.to_node)}`);
+      }
+      return keys;
+    }
+
     function stepTouchesNode(step, nodeId) {
       const n = normId(nodeId);
       return normId(step.from_node) === n || normId(step.to_node) === n;
@@ -1762,16 +2531,9 @@
       drawRoute();
     }
 
-    /** Si existe una conexión estática mismo origen→destino que el paso, copia puerta_salida / puerta_destino para el modo pasivo. */
-    function syncStaticEdgeWithPaso(paso) {
-      if (!paso) return;
-      const from = normId(paso.from_node);
-      const to = normId(paso.to_node);
-      if (!from || !to) return;
-      const edge = state.edges.find(e => normId(e.from) === from && normId(e.to) === to);
-      if (!edge) return;
-      edge.out_port = paso.out_port ? normId(paso.out_port) : '';
-      edge.in_port = paso.in_port ? normId(paso.in_port) : '';
+    /** Regenera aristas del grafo estático desde los pasos (un origen→destino por clave; puertos del último paso en orden). */
+    function syncStaticEdgeWithPaso() {
+      state.edges = edgesFromPasos(state.pasos);
     }
 
     /** Al enfocar nodo: sin flecha elegida salvo que solo haya una (evita elegir en panel). */
@@ -1946,7 +2708,7 @@
         paso[field] = portName;
       }
 
-      syncStaticEdgeWithPaso(paso);
+      syncStaticEdgeWithPaso();
       saveState();
       if (portEditActiveNodeId !== null) {
         state.portConnectionIdx = -1;
@@ -1967,15 +2729,16 @@
     function drawNodes() {
       const activeNodeId = getActiveNodeId();
       nodesLayer.innerHTML = '';
+      const procesoNodeIds = state.selectedTxId ? nodeIdsForProceso(state.selectedTxId) : null;
       for (const actor of state.actors) {
+        if (!procesoNodeIds || !procesoNodeIds.has(normId(actor.id))) continue;
         const isActive = actor.id === activeNodeId;
-        let nodeClass = 'node' + (actor.visible ? '' : ' hidden') + (actor.description ? ' node-has-tooltip' : '') + (isActive ? ' active-step' : '');
+        let nodeClass = 'node' + (actor.visible ? '' : ' hidden') + (isActive ? ' active-step' : '');
         if (portEditMode && portEditActiveNodeId !== null && portEditActiveNodeId === actor.id) {
           nodeClass += ' node-port-edit-focus';
         }
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.setAttribute('class', nodeClass);
-        if (actor.description) g.setAttribute('data-has-tooltip', '1');
         g.dataset.id = actor.id;
         g.setAttribute('transform', `translate(${actor.x},${actor.y})`);
 
@@ -2060,9 +2823,13 @@
       // Con paso activo (Play, pausa, avanzar/retroceder) solo la ruta por puertos; no el grafo base.
       if (state.runTimer || state.stepIndex >= 0) return;
 
+      if (!state.selectedTxId) return;
+
+      const edgeKeys = directedEdgeKeysForProceso(state.selectedTxId);
       const amap = actorMap();
 
       for (const edge of state.edges) {
+        if (!edgeKeys.has(`${normId(edge.from)}|${normId(edge.to)}`)) continue;
         const from = amap.get(edge.from);
         const to = amap.get(edge.to);
         if (!from || !to) continue;
@@ -2354,7 +3121,7 @@
     }
 
     function clearStepsPanel() {
-      stepsPanel.innerHTML = '<div class="muted">Selecciona un proceso para ver pasos.</div>';
+      stepsPanel.innerHTML = '<div class="muted">Selecciona un proceso para ver el diagrama y los pasos.</div>';
       updateStepBar(null);
     }
 
@@ -2513,8 +3280,11 @@
 
     function applyDemo() {
       resetPortEditMode();
+      snapshotBeforeDemo = cloneStateForDemoSnapshot();
+      state.selectedTxId = null;
+      state.stepIndex = -1;
+      stopRun();
       state.actors = DEMO.actors.map(a => ({ ...a, visible: a.visible !== 0 }));
-      state.edges = DEMO.edges.map(e => ({ ...e }));
 
       if (DEMO.procesos) {
         state.procesos = DEMO.procesos.map(p => ({ ...p }));
@@ -2528,11 +3298,14 @@
         state.pasos = [];
       }
 
+      state.edges = edgesFromPasos(state.pasos);
+
       renderActors();
       renderEvents();
       clearStepsPanel();
       drawAll();
       updatePortEditButtonState();
+      state.demoLayoutVersion = DEMO_LAYOUT_VERSION;
       saveState();
       const loadDemoEl = $('#loadDemoBtn');
       if (loadDemoEl) { loadDemoEl.textContent = 'Demo Activo'; loadDemoEl.classList.add('port-edit-active'); }
@@ -2540,6 +3313,7 @@
     }
 
     function emptyState() {
+      snapshotBeforeDemo = null;
       state.actors = [];
       state.edges = [];
       state.casos = [];
@@ -2547,6 +3321,7 @@
       state.stepIndex = -1;
       stopRun();
       resetPortEditMode();
+      state.demoLayoutVersion = 0;
       renderActors();
       renderEvents();
       clearStepsPanel();
@@ -2561,16 +3336,19 @@
     // Descarga la plantilla Excel Demo (mismo contenido que Modo Demo)
     function downloadDemo() {
       try {
-        const demoEdges = DEMO.edges.map(e => {
-          const row = { from: e.from, to: e.to };
-          if (e.out_port) row.puerta_salida = e.out_port;
-          if (e.in_port) row.puerta_destino = e.in_port;
-          return row;
-        });
+        /* Misma convención que import / Mi Excel: y en cartesiano visual (crece hacia arriba), no y SVG del lienzo. */
+        const demoActorRows = DEMO.actors.map(a => ({
+          id: a.id,
+          label: a.label,
+          type: a.type,
+          x: Math.round(a.x),
+          y: Math.round(660 - (a.y + NODE_H)),
+          visible: a.visible ? 1 : 0,
+          description: a.description || ''
+        }));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.actors), 'Nodos');
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(demoEdges), 'Conexiones');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.procesos), 'Procesos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(demoActorRows), 'Nodos');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(DEMO.pasos), 'Pasos');
         XLSX.writeFile(wb, 'Excel_Demo.xlsx');
       } catch (err) {
@@ -2597,13 +3375,6 @@
           description: a.description || ''
         }));
 
-        const edgeRows = state.edges.map(e => {
-          const row = { from: e.from, to: e.to };
-          if (e.out_port) row.puerta_salida = e.out_port;
-          if (e.in_port) row.puerta_destino = e.in_port;
-          return row;
-        });
-
         const procRows = state.procesos.map(p => ({
           id: p.id,
           nombre: p.nombre,
@@ -2621,9 +3392,8 @@
         }));
 
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(actorRows), 'Nodos');
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(edgeRows), 'Conexiones');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(procRows), 'Procesos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(actorRows), 'Nodos');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pasoRows), 'Pasos');
 
         const now = new Date();
@@ -2663,30 +3433,124 @@
         try {
           const ab = await file.arrayBuffer();
           const wb = XLSX.read(ab, { type: 'array' });
+          const val = validateExcelWorkbook(wb);
+          if (!val.ok) {
+            showExcelValidationModal(val.errors);
+            ev.target.value = '';
+            return;
+          }
           loadWorkbook(wb);
         } catch (err) {
           console.error('Error leyendo XLSX', err);
+          showExcelValidationModal([
+            'El archivo no pudo leerse. Comprueba que sea un Excel válido (.xlsx / .xls) y que no esté dañado.',
+            ...(err && err.message ? [`Detalle: ${err.message}`] : [])
+          ]);
         }
         // Resetea el input para permitir volver a cargar el mismo archivo tras ser modificado
         ev.target.value = '';
       });
 
+      const excelErrModal = $('#excelErrorModal');
+      const closeExcelErr = $('#closeExcelErrorBtn');
+      const dismissExcelErr = $('#dismissExcelErrorBtn');
+      if (closeExcelErr) closeExcelErr.addEventListener('click', hideExcelValidationModal);
+      if (dismissExcelErr) dismissExcelErr.addEventListener('click', hideExcelValidationModal);
+      if (excelErrModal) {
+        excelErrModal.addEventListener('click', ev => {
+          if (ev.target === excelErrModal) hideExcelValidationModal();
+        });
+      }
+
       $('#landingHowBtn').addEventListener('click', () => $('#helpModal').classList.add('active'));
       $('#landingDemoBtn').addEventListener('click', () => applyDemo());
       $('#landingFileBtn').addEventListener('click', () => $('#fileInput').click());
 
-      $('#helpBtn').addEventListener('click', () => $('#helpModal').classList.add('active'));
-      $('#closeHelpBtn').addEventListener('click', () => $('#helpModal').classList.remove('active'));
-      $('#helpModal').addEventListener('click', ev => {
-        if (ev.target === $('#helpModal')) $('#helpModal').classList.remove('active');
+      const STANDALONE_COPY = document.documentElement.hasAttribute('data-diagrama-standalone');
+      const helpModal = $('#helpModal');
+      const downloadHtmlModal = STANDALONE_COPY ? null : $('#downloadHtmlModal');
+
+      function performDownloadDiagramasHtml() {
+        if (STANDALONE_COPY) return;
+        const downloadBtn = $('#downloadHtmlBtn');
+        const downloadModalEl = $('#downloadHtmlModal');
+        const btnAnchor = downloadBtn ? { parent: downloadBtn.parentNode, next: downloadBtn.nextSibling } : null;
+        const modalAnchor = downloadModalEl ? { parent: downloadModalEl.parentNode, next: downloadModalEl.nextSibling } : null;
+
+        document.documentElement.setAttribute('data-diagrama-standalone', '1');
+        if (downloadBtn) downloadBtn.remove();
+        if (downloadModalEl) downloadModalEl.remove();
+
+        const overlays = [...document.querySelectorAll('.modal-overlay')];
+        const wasActive = overlays.map(el => el.classList.contains('active'));
+        overlays.forEach(el => el.classList.remove('active'));
+        let html;
+        try {
+          html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        } finally {
+          if (downloadModalEl && modalAnchor && modalAnchor.parent) {
+            modalAnchor.parent.insertBefore(downloadModalEl, modalAnchor.next);
+          }
+          if (downloadBtn && btnAnchor && btnAnchor.parent) {
+            btnAnchor.parent.insertBefore(downloadBtn, btnAnchor.next);
+          }
+          document.documentElement.removeAttribute('data-diagrama-standalone');
+          overlays.forEach((el, i) => {
+            if (wasActive[i] && el.id !== 'downloadHtmlModal') el.classList.add('active');
+          });
+        }
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'diagramas.html';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+      }
+
+      if (!STANDALONE_COPY && downloadHtmlModal) {
+        function openDownloadHtmlModal() {
+          downloadHtmlModal.classList.add('active');
+        }
+        function closeDownloadHtmlModal() {
+          downloadHtmlModal.classList.remove('active');
+        }
+        $('#downloadHtmlBtn').addEventListener('click', openDownloadHtmlModal);
+        $('#closeDownloadHtmlBtn').addEventListener('click', closeDownloadHtmlModal);
+        $('#cancelDownloadHtmlBtn').addEventListener('click', closeDownloadHtmlModal);
+        $('#confirmDownloadHtmlBtn').addEventListener('click', () => {
+          closeDownloadHtmlModal();
+          performDownloadDiagramasHtml();
+        });
+        downloadHtmlModal.addEventListener('click', ev => {
+          if (ev.target === downloadHtmlModal) closeDownloadHtmlModal();
+        });
+      }
+
+      $('#helpBtn').addEventListener('click', () => helpModal.classList.add('active'));
+      $('#closeHelpBtn').addEventListener('click', () => helpModal.classList.remove('active'));
+      helpModal.addEventListener('click', ev => {
+        if (ev.target === helpModal) helpModal.classList.remove('active');
+      });
+      document.addEventListener('keydown', ev => {
+        if (ev.key !== 'Escape') return;
+        if (!STANDALONE_COPY && downloadHtmlModal && downloadHtmlModal.classList.contains('active')) {
+          downloadHtmlModal.classList.remove('active');
+          ev.preventDefault();
+          return;
+        }
+        if (!helpModal.classList.contains('active')) return;
+        helpModal.classList.remove('active');
+        ev.preventDefault();
       });
 
       $('#loadDemoBtn').addEventListener('click', () => {
         const el = $('#loadDemoBtn');
         if (el && el.classList.contains('port-edit-active')) {
-          emptyState();
-          el.textContent = '▶ Demo';
-          el.classList.remove('port-edit-active');
+          exitDemoMode();
         } else {
           applyDemo();
         }
@@ -2913,7 +3777,8 @@
         actors: state.actors.map(a => ({ ...a })),
         edges: state.edges.map(e => ({ ...e })),
         procesos: state.procesos.map(p => ({ ...p })),
-        pasos: state.pasos.map(p => ({ ...p }))
+        pasos: state.pasos.map(p => ({ ...p })),
+        demoLayoutVersion: state.demoLayoutVersion | 0
       };
       localStorage.setItem('diagramaActoresData', JSON.stringify(dataToSave));
     }
@@ -2925,10 +3790,12 @@
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        const layoutMigrated = migrateBundledDemoLayout(parsed);
         state.actors = (parsed.actors || []).map(a => ({ ...a, description: a.description || '' }));
-        state.edges = parsed.edges || [];
         state.procesos = parsed.procesos || [];
         state.pasos = parsed.pasos || [];
+        state.demoLayoutVersion = parsed.demoLayoutVersion | 0;
+        state.edges = edgesFromPasos(state.pasos);
 
         if (state.actors.length === 0 && state.procesos.length === 0) {
           emptyState();
@@ -2939,6 +3806,7 @@
           drawAll();
           updatePortEditButtonState();
           hideLanding();
+          if (layoutMigrated) saveState();
         }
       } catch (err) {
         console.error('Error parseando state guardado', err);
@@ -2950,11 +3818,6 @@
 
     if (location.hash === '#demo') {
       applyDemo();
-      setTimeout(() => {
-        if (state.procesos && state.procesos.length > 0) {
-          runTx(state.procesos[0].id);
-        }
-      }, 600);
     }
 
     updatePortEditButtonState();
