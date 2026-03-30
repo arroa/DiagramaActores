@@ -231,6 +231,25 @@
       font-weight: 600;
     }
 
+    .device-hint {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(30, 41, 59, 0.45);
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 896px),
+    ((max-height: 520px) and (orientation: landscape) and (hover: none)) {
+      .device-hint {
+        display: block;
+      }
+    }
+
     @media (max-height: 880px) {
       .wrap {
         padding: 1.25rem 1rem 2rem;
@@ -287,6 +306,7 @@
       <h1>Diagrama de actores y flujos</h1>
       <p class="lead">Una herramienta en el navegador, portable y simple, para hablar sobre un proceso y recorrerlo paso a paso.
         Lo mejor es que lo administras con un simple Excel.</p>
+      <p class="device-hint"><strong>Para usar la herramienta con comodidad, ábrela en un PC.</strong> Desde el móvil (vertical u horizontal) puedes entrar y revisar el flujo; Excel, arrastrar actores y el panel completo están pensados para <strong>ordenador</strong> o tablet grande en horizontal.</p>
     </header>
 
     <div class="cta">
